@@ -715,6 +715,14 @@ details.acc summary .wk { background: var(--u); color: var(--uf); }
 .gh-setup ol { margin: 0 0 14px; padding-left: 22px; display: grid; gap: 6px; }
 .gh-setup .field { margin-bottom: 12px; }
 .gh-err { color: var(--bad-ink); font-weight: 800; }
+
+/* Spazio verticale per frazioni e potenze: i riquadri che scorrono in orizzontale non devono tagliarle */
+.opt .mopt { display: block; overflow-x: auto; overflow-y: hidden; padding: .55em 2px; line-height: 1.5; }
+.step > div { overflow-x: auto; overflow-y: hidden; padding: .45em 2px; }
+.form-row > span:last-child { padding: .55em 2px; }
+.fl > span { overflow-y: hidden; padding: .6em 12px; }
+.katex-display { padding: .5em 0; }
+.ex-q { overflow-x: auto; overflow-y: hidden; }
 </style>
 
 <div class="shell" id="shell">

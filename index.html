@@ -723,6 +723,58 @@ details.acc summary .wk { background: var(--u); color: var(--uf); }
 .fl > span { overflow-y: hidden; padding: .6em 12px; }
 .katex-display { padding: .5em 0; }
 .ex-q { overflow-x: auto; overflow-y: hidden; }
+
+/* ───────── Lavagna di matematica ───────── */
+:root { --grid: #DDEBF7; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --grid: #1E2F37; } }
+:root[data-theme="dark"] { --grid: #1E2F37; }
+.lab-switch { max-width: 520px; }
+#view-lab .lab-switch { margin-bottom: 16px; }
+.mlab { display: flex; flex-direction: column; gap: 14px; max-width: 860px; }
+.mlab-types { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 8px; scrollbar-width: thin; }
+.mlab-types .skill { flex: none; padding: 8px 12px; font-size: 14.5px; }
+.mlab-types .skill[aria-pressed="true"] { background: var(--c); color: #fff; border-color: var(--c); box-shadow: 0 3px 0 color-mix(in srgb, var(--c) 70%, black); }
+.mlab-task { background: var(--surface); border: 2px solid var(--line); border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.mlab-q { font-size: 24px; overflow-x: auto; overflow-y: hidden; padding: .3em 0; }
+.mlab-free { color: var(--muted); }
+.mlab-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.mlab-keys { display: flex; gap: 6px; flex-wrap: wrap; }
+.mlab-keys button { min-width: 48px; height: 44px; padding: 0 10px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); box-shadow: 0 3px 0 var(--line); font-size: 16px; color: var(--ink); display: inline-flex; align-items: center; gap: 6px; }
+.mlab-keys button small { font-size: 12px; font-weight: 800; color: var(--muted); }
+.mlab-keys button:active { transform: translateY(3px); box-shadow: none; }
+.mlab-sheet { background-color: var(--surface); background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 24px 24px; border: 2px solid var(--line); border-radius: 16px; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.mrow { display: grid; grid-template-columns: 44px minmax(0, 1fr) 30px 32px; align-items: start; gap: 6px; padding: 6px 4px; border-radius: 12px; border: 2px solid transparent; }
+.mrow.sel { border-color: var(--sel-line); background: color-mix(in srgb, var(--sel) 55%, transparent); }
+.mnum { margin-top: 8px; font: 800 13px var(--font-mono); color: var(--muted); background: none; border: 0; padding: 4px 2px; border-radius: 8px; text-align: left; }
+.mrow.sel .mnum { color: var(--brand); }
+.mbody { min-width: 0; }
+.mexpr { min-height: 44px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 22px; overflow-x: auto; overflow-y: hidden; padding: .25em 0; }
+.mexpr math-field { flex: 1; min-width: 0; width: 100%; font-size: 22px; background: color-mix(in srgb, var(--surface) 85%, transparent); color: var(--ink); border: 2px solid var(--line); border-radius: 12px; padding: 6px 10px; --caret-color: var(--brand); --selection-background-color: var(--sel); --contains-highlight-background-color: transparent; --placeholder-color: var(--muted); }
+.mexpr math-field:focus-within { border-color: var(--brand); outline: none; }
+.mtag { font: 800 11.5px var(--font-body); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); background: var(--surface-2); border-radius: 6px; padding: 2px 7px; }
+.mrow.tool .mexpr, .mrow.sol .mexpr { color: var(--muted); }
+.mrow.given .mexpr { font-weight: 700; }
+.mmsg { font-size: 14px; font-weight: 700; margin: 2px 0 0; color: var(--muted); }
+.mmsg:empty { display: none; }
+.mstat { margin-top: 10px; width: 26px; height: 26px; }
+.mstat .ic { width: 26px; height: 26px; }
+.mrow.ok .mstat { color: var(--good); } .mrow.ok .mmsg { color: var(--good-ink); }
+.mrow.ko .mstat { color: var(--bad); } .mrow.ko .mmsg { color: var(--bad-ink); } .mrow.ko math-field { border-color: var(--bad); }
+.mrow.warn .mstat { color: var(--sun-deep); } .mrow.warn .mmsg { color: var(--ink); }
+.mrow.done { background: var(--good-soft); border-color: var(--good); } .mrow.done .mstat { color: var(--sun-deep); } .mrow.done .mmsg { color: var(--good-ink); font-weight: 900; }
+.mdel { margin-top: 8px; width: 30px; height: 30px; border-radius: 8px; border: 0; background: none; color: var(--muted); display: grid; place-items: center; }
+.mdel .ic { width: 18px; height: 18px; }
+.mdel:hover { background: var(--surface-2); }
+.mlab-cmds { display: flex; gap: 8px; flex-wrap: wrap; }
+.mcmd { padding: 10px 14px; border-radius: 14px; border: 2px solid var(--sel-line); background: var(--sel); color: var(--brand); font-weight: 900; box-shadow: 0 3px 0 var(--sel-line); }
+.mcmd:active { transform: translateY(3px); box-shadow: none; }
+.mlab-cmdnote { font-size: 13px; color: var(--muted); margin-top: -6px; }
+.mlab-help { background: var(--surface); border: 2px solid var(--line); border-radius: 16px; padding: 10px 14px; }
+.mlab-help summary { cursor: pointer; font-weight: 800; display: flex; align-items: center; gap: 8px; list-style: none; }
+.mlab-help summary .ic { width: 20px; height: 20px; color: var(--sun-deep); }
+.mlab-help ul { margin: 10px 0 2px; padding-left: 20px; display: grid; gap: 6px; font-size: 15px; }
+.mlab-help kbd { font-family: var(--font-mono); background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 0 6px; }
+@media (max-width: 520px) { .mrow { grid-template-columns: 34px minmax(0, 1fr) 26px 28px; } .mexpr, .mexpr math-field { font-size: 19px; } .mlab-q { font-size: 21px; } }
 </style>
 
 <div class="shell" id="shell">
@@ -4271,6 +4323,360 @@ M.skills = SKILLS;
 
 </script>
 <script>
+// Lavagna di matematica: analisi delle righe, controllo dei passaggi, comandi e generatori di esercizi.
+// Usa math.js (oggetto globale `math`). Le righe arrivano come "ascii-math" da MathLive.
+(function (root) {
+'use strict';
+const M = () => root.math;
+const FN = new Set(['sqrt', 'nthRoot', 'log', 'sin', 'cos', 'tan', 'abs', 'exp', 'pi', 'e', 'PI', 'E']);
+const EPS = 1e-7;
+
+// ── da ascii-math (MathLive) alla sintassi di math.js ──
+function group(s, i) { // s[i] === '(' → indice della ')' corrispondente
+  let d = 0;
+  for (let k = i; k < s.length; k++) { if (s[k] === '(') d++; else if (s[k] === ')') { d--; if (!d) return k; } }
+  return -1;
+}
+function token(s, i) { // un numero o un nome a partire da i (spazi saltati)
+  while (s[i] === ' ') i++;
+  if (s[i] === '(') { const j = group(s, i); return j < 0 ? null : { text: s.slice(i, j + 1), end: j + 1 }; }
+  const m = /^[A-Za-z0-9.]+/.exec(s.slice(i));
+  return m ? { text: m[0], end: i + m[0].length } : null;
+}
+function toMathjs(a) {
+  let s = String(a || '');
+  s = s.replace(/\bxx\b/g, '*').replace(/[·×⋅]/g, '*').replace(/[÷:]/g, '/').replace(/−/g, '-');
+  s = s.replace(/(\d)\s*,\s*(\d)/g, '$1.$2');
+  s = s.replace(/\blog\s*\(\s*([^,()]+)\s*\)/g, 'log10($1)').replace(/\bln\b/g, 'log');
+  // log _b(arg) → log(arg, b)
+  for (let guard = 0; guard < 20; guard++) {
+    const m = /\blog\s*_\s*/.exec(s); if (!m) break;
+    const b = token(s, m.index + m[0].length); if (!b) break;
+    const arg = token(s, b.end); if (!arg) break;
+    // l'argomento comprende l'eventuale potenza: log_5 5^2 = log_5(5^2)
+    let end = arg.end, text = arg.text;
+    for (;;) { let t = end; while (s[t] === ' ') t++; if (s[t] !== '^') break; const e = token(s, t + 1); if (!e) break; text += '^' + e.text; end = e.end; }
+    s = s.slice(0, m.index) + `log(${text}, ${b.text})` + s.slice(end);
+  }
+  // root(n)(x) → nthRoot(x, n)
+  for (let guard = 0; guard < 20; guard++) {
+    const k = s.indexOf('root('); if (k < 0 || (k > 0 && /[a-zA-Z]/.test(s[k - 1]))) break;
+    const j = group(s, k + 4); if (j < 0) break;
+    let t = j + 1; while (s[t] === ' ') t++;
+    const arg = token(s, t); if (!arg) break;
+    s = s.slice(0, k) + `nthRoot(${arg.text}, ${s.slice(k + 5, j)})` + s.slice(arg.end);
+  }
+  s = s.replace(/\b([a-z])_\{?\d+\}?/gi, '$1');      // x_1 → x
+  s = s.replace(/\bpi\b/g, 'pi');
+  return s.trim();
+}
+
+// ── classificazione di una riga ──
+function splitTop(s, re) { // divide fuori dalle parentesi
+  const out = []; let d = 0, last = 0;
+  for (let i = 0; i < s.length; i++) {
+    if (s[i] === '(') d++; else if (s[i] === ')') d--;
+    else if (!d) { const m = re.exec(s.slice(i)); if (m && m.index === 0) { out.push(s.slice(last, i)); i += m[0].length - 1; last = i + 1; } }
+  }
+  out.push(s.slice(last));
+  return out.map(x => x.trim()).filter(Boolean);
+}
+function parseLine(ascii) {
+  const s = toMathjs(ascii);
+  if (!s) return { kind: 'empty' };
+  if (/[<>≤≥]|\\le|\\ge/.test(s)) return { kind: 'ineq', src: s };
+  try {
+    const parts = splitTop(s, /^(\bor\b|∨|\blor\b)/);
+    if (parts.length > 1 || /^\s*[a-z]\s*=\s*[^=]+$/i.test(s) && isNumeric(splitTop(s, /^=/)[1])) {
+      const sols = parts.map(p => { const q = splitTop(p, /^=/); if (q.length !== 2) throw new Error('soluzione'); return { v: q[0].trim(), node: M().parse(q[1]) }; });
+      if (sols.every(x => /^[a-z]$/i.test(x.v) && isNumericNode(x.node))) return { kind: 'sol', v: sols[0].v, sols, src: s };
+      if (parts.length > 1) throw new Error('or');
+    }
+    const eq = splitTop(s, /^=/);
+    if (eq.length === 2) { const L = M().parse(eq[0]), R = M().parse(eq[1]); return { kind: 'eq', L, R, f: M().parse(`(${eq[0]}) - (${eq[1]})`), src: s }; }
+    if (eq.length > 2) return { kind: 'error', msg: 'C\'è più di un segno uguale.' };
+    return { kind: 'expr', node: M().parse(s), src: s };
+  } catch (e) { return { kind: 'error', msg: 'Non riesco a leggere la formula: controlla parentesi e simboli.' }; }
+}
+function vars(node) {
+  const out = new Set();
+  node.traverse((n, path, parent) => { if (n.isSymbolNode && !FN.has(n.name) && !(parent && parent.isFunctionNode && parent.fn === n)) out.add(n.name); });
+  return [...out];
+}
+function isNumericNode(n) { return vars(n).length === 0; }
+function isNumeric(s) { try { return isNumericNode(M().parse(s)); } catch (e) { return false; } }
+function val(code, scope) { try { const v = code.evaluate(scope); const x = typeof v === 'number' ? v : (v && typeof v.re === 'number' ? (Math.abs(v.im) < 1e-12 ? v.re : NaN) : Number(v)); return x; } catch (e) { return NaN; } }
+function close(a, b) { return Math.abs(a - b) <= EPS * (1 + Math.abs(a) + Math.abs(b)); }
+
+// valori di prova riproducibili
+let seed = 12345;
+function rnd() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+function samples(vs, n = 14) {
+  seed = 12345; const out = [];
+  for (let i = 0; i < n; i++) { const sc = {}; vs.forEach(v => { sc[v] = (rnd() * 6 - 3) || 0.7; }); out.push(sc); }
+  return out;
+}
+function sameExpr(a, b) {
+  const vs = [...new Set([...vars(a), ...vars(b)])];
+  const ca = a.compile(), cb = b.compile();
+  let good = 0;
+  for (const sc of samples(vs)) {
+    const x = val(ca, sc), y = val(cb, sc);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
+    if (!close(x, y)) return false;
+    good++;
+  }
+  return good >= 4;
+}
+// radici reali di f(v) in [-60, 60] (scansione + bisezione, anche radici doppie)
+function roots(f, v) {
+  const c = f.compile(), F = x => val(c, { [v]: x });
+  const out = [], push = r => { if (!out.some(q => Math.abs(q - r) < 1e-6)) out.push(r); };
+  const N = 24000, A = -60, B = 60, h = (B - A) / N;
+  let px = A, py = F(A);
+  for (let i = 1; i <= N; i++) {
+    const x = A + i * h, y = F(x);
+    if (Number.isFinite(py) && Number.isFinite(y)) {
+      if (py === 0) push(px);
+      else if (py * y < 0) { let lo = px, hi = x, flo = py; for (let k = 0; k < 80; k++) { const m = (lo + hi) / 2, fm = F(m); if (!Number.isFinite(fm)) break; if (flo * fm <= 0) hi = m; else { lo = m; flo = fm; } } const r = (lo + hi) / 2; if (Math.abs(F(r)) < 1e-6 || Math.abs(F(r)) < 1e-6 * Math.abs(py)) push(r); }
+      else if (Math.abs(y) < 1e-3) { // possibile radice doppia: minimo locale di |f|
+        let lo = x - h, hi = x + h;
+        for (let k = 0; k < 80; k++) { const m1 = lo + (hi - lo) / 3, m2 = hi - (hi - lo) / 3; if (Math.abs(F(m1)) < Math.abs(F(m2))) hi = m2; else lo = m1; }
+        const r = (lo + hi) / 2; if (Math.abs(F(r)) < 1e-9) push(r);
+      }
+    }
+    px = x; py = y;
+  }
+  return out.map(r => { if (Math.abs(r - Math.round(r)) < 1e-7) return Math.round(r); const f = toFrac(r, 200, 1e-7); return f ? f[0] / f[1] : r; }).sort((a, b) => a - b);
+}
+const sameSet = (a, b) => a.length === b.length && a.every((x, i) => close(x, b[i]));
+function eqVar(l) { const vs = vars(l.f); return vs.length === 1 ? vs[0] : vs.length === 0 ? 'x' : null; }
+function solSet(l) { return l.sols.map(s => s.node.evaluate()).map(Number).sort((a, b) => a - b); }
+
+// ── confronto tra due righe ──
+function compare(prev, cur) {
+  if (cur.kind === 'error') return { ok: false, msg: cur.msg };
+  if (cur.kind === 'ineq' || prev.kind === 'ineq') return { ok: null, msg: 'Le disequazioni non sono ancora controllate: puoi scriverle, ma non le verifico.' };
+  if (prev.kind === 'expr' && cur.kind === 'expr') return sameExpr(prev.node, cur.node) ? { ok: true } : { ok: false, msg: 'Questo passaggio non è uguale al precedente.' };
+  if (prev.kind === 'expr' && cur.kind !== 'expr') return { ok: false, msg: 'Stavi lavorando su un\'espressione: qui hai scritto un\'equazione.' };
+  if (cur.kind === 'expr') return { ok: false, msg: 'Stavi risolvendo un\'equazione: manca il segno uguale.' };
+  const setOf = l => { if (l.kind === 'sol') return solSet(l); const v = eqVar(l); return v ? roots(l.f, v) : null; };
+  if (prev.kind === 'eq' && cur.kind === 'eq') {
+    const vs = [...new Set([...vars(prev.f), ...vars(cur.f)])];
+    const c1 = prev.f.compile(), c2 = cur.f.compile(); let k = null, good = 0, prop = true;
+    for (const sc of samples(vs)) { const a = val(c1, sc), b = val(c2, sc); if (!Number.isFinite(a) || !Number.isFinite(b) || Math.abs(a) < 1e-9) continue; const r = b / a; if (k === null) k = r; else if (!close(k, r)) { prop = false; break; } good++; }
+    if (prop && good >= 4 && k && Math.abs(k) > 1e-12) return { ok: true };
+  }
+  const A = setOf(prev), B = setOf(cur);
+  if (!A || !B) return { ok: null, msg: 'Con più incognite non riesco a controllare questo passaggio.' };
+  if (sameSet(A, B)) return { ok: true, msg: prev.kind === 'eq' && cur.kind === 'eq' ? 'Stesse soluzioni del passaggio precedente.' : undefined };
+  const lost = A.filter(x => !B.some(y => close(x, y))), added = B.filter(x => !A.some(y => close(x, y)));
+  if (lost.length && !added.length) return { ok: false, msg: `Hai perso ${lost.length === 1 ? 'una soluzione' : 'delle soluzioni'}: ${lost.map(fmtNum).join(', ')}.` };
+  if (added.length && !lost.length) return { ok: false, msg: `Hai aggiunto ${added.length === 1 ? 'una soluzione' : 'soluzioni'} che non c'erano: ${added.map(fmtNum).join(', ')}.` };
+  return { ok: false, msg: 'Le soluzioni non corrispondono a quelle del passaggio precedente.' };
+}
+
+// ── numeri esatti ──
+function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) [a, b] = [b, a % b]; return a || 1; }
+function toFrac(x, maxD = 1000, tol = 1e-9) { // frazione vicina a x, se c'è
+  for (let d = 1; d <= maxD; d++) { const n = Math.round(x * d); if (Math.abs(n / d - x) < tol * Math.max(1, Math.abs(x))) { const g = gcd(n, d); return [n / g, d / g]; } }
+  return null;
+}
+function fracTex(n, d) { if (d < 0) { n = -n; d = -d; } const g = gcd(n, d); n /= g; d /= g; return d === 1 ? String(n) : `${n < 0 ? '-' : ''}\\frac{${Math.abs(n)}}{${d}}`; }
+function fmtNum(x) { const f = toFrac(x, 100); if (f) return f[1] === 1 ? String(f[0]) : `${f[0]}/${f[1]}`; return String(+x.toFixed(4)).replace('.', ','); }
+function numTex(x) { const f = toFrac(x, 1000); if (f) return fracTex(f[0], f[1]); const r = toSurd(x); return r || String(+x.toFixed(6)).replace('.', '{,}'); }
+function toSurd(x) { // a + b√c con a, b razionali semplici
+  for (let c = 2; c <= 200; c++) { if (Number.isInteger(Math.sqrt(c))) continue; let sq = false; for (let k = 2; k * k <= c; k++) if (c % (k * k) === 0) { sq = true; break; } if (sq) continue;
+    for (let d = 1; d <= 12; d++) for (let bn = -24; bn <= 24; bn++) { if (!bn) continue; const a = x - bn / d * Math.sqrt(c); const fa = toFrac(a, 12); if (fa) { const bt = fracTex(bn, d); const bs = bt === '1' ? '' : bt === '-1' ? '-' : bt; const at = fa[0] ? fracTex(fa[0], fa[1]) : ''; const term = `${bs}\\sqrt{${c}}`; return at ? `${at}${term.startsWith('-') ? '' : '+'}${term}` : term; } } }
+  return null;
+}
+function polyInfo(node) { try { const r = M().rationalize(node, {}, true); if (r.variables.length !== 1 || !r.coefficients || !r.coefficients.length) return null; if (!r.denominator || isNumericNode(r.denominator)) { const den = r.denominator ? Number(r.denominator.evaluate()) : 1; return { v: r.variables[0], c: r.coefficients.map(x => Number(x) / den) }; } return null; } catch (e) { return null; } }
+
+// ── forme finali ──
+const strip = n => { while (n && n.isParenthesisNode) n = n.content; return n; };
+function isSimpleNumber(n) {
+  n = strip(n);
+  if (n.isConstantNode) return true;
+  if (n.isOperatorNode && n.fn === 'unaryMinus') return isSimpleNumber(n.args[0]);
+  if (n.isOperatorNode && n.op === '/' && strip(n.args[0]).isConstantNode && strip(n.args[1]).isConstantNode) { const a = Number(strip(n.args[0]).value), b = Number(strip(n.args[1]).value); return Number.isInteger(a) && Number.isInteger(b) && b > 1 && gcd(a, b) === 1; }
+  if (n.isOperatorNode && n.op === '/' && strip(n.args[0]).isOperatorNode && strip(n.args[0]).fn === 'unaryMinus') return isSimpleNumber(M().parse(`-(${strip(n.args[0]).args[0].toString()}/${n.args[1].toString()})`));
+  return false;
+}
+function isExpanded(n) {
+  let ok = true;
+  n.traverse(m => { if (!ok || !m.isOperatorNode) return; if (m.op === '*' || m.op === '^' || m.op === '/') { const kids = m.op === '/' ? [m.args[0]] : m.args; kids.forEach(k => { const s = strip(k); if (s.isOperatorNode && (s.op === '+' || (s.op === '-' && s.args.length === 2)) && vars(s).length) ok = false; }); } });
+  return ok;
+}
+function isFactored(n) {
+  n = strip(n);
+  if (n.isOperatorNode && n.fn === 'unaryMinus') n = strip(n.args[0]);
+  const factors = [];
+  const walk = m => { m = strip(m); if (m.isOperatorNode && m.op === '*') m.args.forEach(walk); else if (m.isOperatorNode && m.op === '^' && strip(m.args[1]).isConstantNode) { factors.push(strip(m.args[0])); factors.push(strip(m.args[0])); } else factors.push(m); };
+  walk(n);
+  const nonConst = factors.filter(f => vars(f).length);
+  if (nonConst.length < 2) return false;
+  return nonConst.every(f => { const p = polyInfo(f); return p && p.c.length <= 2 || (f.isSymbolNode); });
+}
+function isPowerForm(n) { n = strip(n); if (n.isSymbolNode) return true; if (n.isOperatorNode && n.op === '^' && strip(n.args[0]).isSymbolNode && isSimpleNumber(n.args[1])) return true; if (n.isOperatorNode && n.op === '/' && isSimpleNumber(n.args[0]) && isPowerForm(n.args[1])) return true; return false; }
+
+// ── comandi stile Derive ──
+const MF = () => root.__mFrac || (root.__mFrac = M().create(M().all, { number: 'Fraction' }));
+function texOf(node) { return node.toTex({ parenthesis: 'auto', implicit: 'hide' }).replace(/\\cdot/g, '\\cdot ').replace(/~/g, ''); }
+function exactValueTex(src) {
+  try { const v = MF().evaluate(src); if (v && typeof v.n === 'number' && typeof v.d === 'number') return fracTex(v.s * v.n, v.d); } catch (e) { /* non razionale */ }
+  try { const x = Number(M().evaluate(src)); if (Number.isFinite(x)) return numTex(x); } catch (e) { /* ignora */ }
+  return null;
+}
+function factorInt(n) { const out = []; let k = 2; while (k * k <= n) { let e = 0; while (n % k === 0) { n /= k; e++; } if (e) out.push(e > 1 ? `${k}^{${e}}` : String(k)); k++; } if (n > 1) out.push(String(n)); return out.join('\\cdot '); }
+function linTex(v, r) { if (r === 0) return v; const f = toFrac(r, 1000); if (!f) return `\\left(${v}-${numTex(r)}\\right)`; const [n, d] = f; if (d === 1) return n > 0 ? `\\left(${v}-${n}\\right)` : `\\left(${v}+${-n}\\right)`; return n > 0 ? `\\left(${d}${v}-${n}\\right)` : `\\left(${d}${v}+${-n}\\right)`; }
+function factorPoly(p) {
+  const c = p.c.slice(), v = p.v; let k = 0; while (c.length > 1 && Math.abs(c[0]) < 1e-12) { c.shift(); k++; }
+  const deg = c.length - 1, lead = c[deg];
+  const f = M().parse(c.map((a, i) => `(${a})*${v}^${i}`).join('+'));
+  const rs = deg >= 1 ? roots(f, v).filter(r => toFrac(r, 60)) : [];
+  // molteplicità
+  const mult = []; let rest = c.slice();
+  for (const r of rs) { while (rest.length > 1) { const q = [], n = rest.length - 1; let carry = 0; const tmp = rest.slice().reverse(); const out = []; for (let i = 0; i < tmp.length; i++) { carry = tmp[i] + carry * r; out.push(carry); } const rem = out.pop(); if (Math.abs(rem) > 1e-7 * (1 + Math.abs(lead))) break; rest = out.reverse(); mult.push(r); } }
+  const parts = [];
+  let scale = rest.length === 1 ? rest[0] : 1;
+  const linear = mult.map(r => { const fr = toFrac(r, 60); if (fr && fr[1] > 1) { scale /= fr[1]; } return linTex(v, r); });
+  let restTex = '';
+  if (rest.length > 1) { const node = M().parse(rest.map((a, i) => `(${+a.toFixed(10)})*${v}^${i}`).join('+')); restTex = `\\left(${texOf(M().simplify(node))}\\right)`; }
+  const sc = Math.abs(scale - 1) < 1e-12 ? '' : Math.abs(scale + 1) < 1e-12 ? '-' : numTex(scale);
+  if (k) parts.push(k > 1 ? `${v}^{${k}}` : v);
+  const counts = {}; linear.forEach(t => counts[t] = (counts[t] || 0) + 1);
+  Object.entries(counts).forEach(([t, m]) => parts.push(m > 1 ? `${t}^{${m}}` : t));
+  if (restTex) parts.push(restTex);
+  if (!linear.length && !k) return null;
+  return sc + parts.join('');
+}
+// polinomio ordinato come sul quaderno: 3x^{2}-\frac{1}{2}x+4
+function polyTexC(c, v) {
+  let out = '';
+  for (let p = c.length - 1; p >= 0; p--) {
+    const a = c[p]; if (Math.abs(a) < 1e-12) continue;
+    const abs = Math.abs(a), t = numTex(abs);
+    const coef = p === 0 ? t : (Math.abs(abs - 1) < 1e-12 ? '' : t);
+    const pw = p === 0 ? '' : p === 1 ? v : `${v}^{${p}}`;
+    out += (a < 0 ? '-' : out ? '+' : '') + coef + pw;
+  }
+  return out || '0';
+}
+function nicePolyTex(node) { const p = polyInfo(node); return p ? polyTexC(p.c, p.v) : null; }
+function command(cmd, line) {
+  try {
+    if (line.kind === 'error' || line.kind === 'empty') return { error: 'Scegli una riga valida.' };
+    if (cmd === 'risolvi') {
+      const l = line.kind === 'expr' ? { kind: 'eq', f: line.node } : line;
+      if (l.kind !== 'eq') return { error: 'Risolvi funziona su un\'equazione (o su un\'espressione da porre uguale a zero).' };
+      const v = eqVar(l); if (!v) return { error: 'Riesco a risolvere solo equazioni con una incognita.' };
+      const p = polyInfo(l.f);
+      let rs;
+      if (p && p.c.length === 3) { const [c0, c1, c2] = p.c; const D = c1 * c1 - 4 * c2 * c0; if (D < -1e-12) return { tex: '\\text{nessuna soluzione reale}', note: `Δ = ${fmtNum(D)} < 0` }; const sq = Math.sqrt(Math.max(0, D)); rs = [(-c1 - sq) / (2 * c2), (-c1 + sq) / (2 * c2)]; rs = rs.filter((r, i) => !i || !close(r, rs[0])).sort((a, b) => a - b); }
+      else rs = roots(l.f, v);
+      if (!rs.length) return { tex: '\\text{nessuna soluzione reale}' };
+      return { tex: rs.map(r => `${v}=${numTex(r)}`).join('\\lor '), approx: rs.some(r => !toFrac(r, 1000) && !toSurd(r)) };
+    }
+    const node = line.kind === 'expr' ? line.node : line.kind === 'eq' ? null : null;
+    if (!node) {
+      if (line.kind === 'eq' && (cmd === 'semplifica' || cmd === 'sviluppa')) { const a = command(cmd, { kind: 'expr', node: line.L }), b = command(cmd, { kind: 'expr', node: line.R }); if (a.error || b.error) return a.error ? a : b; return { tex: `${a.tex}=${b.tex}` }; }
+      return { error: 'Questo comando funziona su un\'espressione.' };
+    }
+    const vs = vars(node);
+    if (cmd === 'approssima') { const x = Number(node.evaluate()); if (!Number.isFinite(x)) return { error: 'Per il valore approssimato servono solo numeri.' }; return { tex: String(+x.toPrecision(10)).replace('.', '{,}'), approx: true }; }
+    if (cmd === 'semplifica') { if (!vs.length) { const t = exactValueTex(node.toString()); if (t) return { tex: t }; } const sn = M().simplify(node); return { tex: nicePolyTex(sn) || texOf(sn) }; }
+    if (cmd === 'sviluppa') { if (!vs.length) return command('semplifica', line); const t = nicePolyTex(node); if (t) return { tex: t }; try { return { tex: texOf(M().rationalize(node)) }; } catch (e) { return { tex: texOf(M().simplify(node)) }; } }
+    if (cmd === 'scomponi') {
+      if (!vs.length) { const x = Number(node.evaluate()); if (Number.isInteger(x) && Math.abs(x) > 1) return { tex: (x < 0 ? '-' : '') + factorInt(Math.abs(x)) }; return { error: 'Scomponi funziona su un numero intero o su un polinomio.' }; }
+      const p = polyInfo(node); if (!p) return { error: 'Riesco a scomporre solo polinomi in una variabile.' };
+      const t = factorPoly(p); if (!t) return { error: 'Non si scompone con coefficienti razionali.' };
+      return { tex: t };
+    }
+    if (cmd === 'deriva') { const v = vs.includes('x') ? 'x' : vs[0]; if (!v) return { tex: '0' }; const d = M().simplify(M().derivative(node, v)); return { tex: nicePolyTex(d) || texOf(d), note: `derivata rispetto a ${v}` }; }
+    return { error: 'Comando sconosciuto.' };
+  } catch (e) { return { error: 'Non riesco a calcolarlo.' }; }
+}
+
+// ── esercizi generati ──
+const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const nz = (a, b) => { let v; do v = ri(a, b); while (!v); return v; };
+const sg = (k, first) => k < 0 ? `-${Math.abs(k)}` : (first ? `${k}` : `+${k}`);
+const term = (c, p, first) => { if (!c) return ''; const a = Math.abs(c); const body = p === 0 ? `${a}` : `${a === 1 ? '' : a}x${p > 1 ? `^{${p}}` : ''}`; return (c < 0 ? '-' : first ? '' : '+') + body; };
+const polyTex = cs => { let s = ''; for (let p = cs.length - 1; p >= 0; p--) { const t = term(cs[p], p, !s); s += t; } return s || '0'; };
+const GEN = {
+  frazioni() {
+    let a, b, c, d; do { b = ri(2, 9); d = ri(2, 9); a = ri(1, b * 2); c = ri(1, d * 2); } while (b === d || gcd(a, b) !== 1 || gcd(c, d) !== 1);
+    const op = Math.random() < .5 ? '+' : '-';
+    const n = op === '+' ? a * d + c * b : a * d - c * b, den = b * d;
+    return { title: 'Calcola e semplifica', start: `\\frac{${a}}{${b}}${op}\\frac{${c}}{${d}}`, expect: { kind: 'expr', form: 'number', value: n / den }, hint: 'Porta allo stesso denominatore, somma i numeratori e semplifica.', steps: [`\\frac{${a * d}${op}${c * b}}{${den}}`, fracTex(n, den)] };
+  },
+  potenze() {
+    const m = ri(2, 7), n = ri(2, 7), k = ri(1, m + n + 2), r = m + n - k;
+    return { title: 'Semplifica (usa le proprietà delle potenze)', start: `\\frac{x^{${m}}\\cdot x^{${n}}}{x^{${k}}}`, expect: { kind: 'expr', form: 'power', node: `x^(${r})` }, hint: 'Stessa base: nel prodotto gli esponenti si sommano, nel quoziente si sottraggono.', steps: [`x^{${m}+${n}-${k}}`, r === 0 ? '1' : r === 1 ? 'x' : `x^{${r}}`] };
+  },
+  prodotti() {
+    const t = ri(0, 2), a = ri(1, 3), b = nz(-7, 7);
+    const lin = `${a === 1 ? '' : a}x${sg(b)}`;
+    if (t === 0) return { title: 'Sviluppa il quadrato del binomio', start: `\\left(${lin}\\right)^{2}`, expect: { kind: 'expr', form: 'expanded', node: `(${a}x+(${b}))^2` }, hint: 'Quadrato del primo, più il doppio prodotto, più il quadrato del secondo.', steps: [polyTex([b * b, 2 * a * b, a * a])] };
+    if (t === 1) { const bb = Math.abs(b); return { title: 'Sviluppa la somma per la differenza', start: `\\left(${a === 1 ? '' : a}x+${bb}\\right)\\left(${a === 1 ? '' : a}x-${bb}\\right)`, expect: { kind: 'expr', form: 'expanded', node: `(${a}x)^2-${bb * bb}` }, hint: 'Somma per differenza: quadrato del primo meno quadrato del secondo.', steps: [polyTex([-bb * bb, 0, a * a])] }; }
+    const c = nz(-7, 7);
+    return { title: 'Sviluppa il prodotto', start: `\\left(x${sg(b)}\\right)\\left(x${sg(c)}\\right)`, expect: { kind: 'expr', form: 'expanded', node: `(x+(${b}))*(x+(${c}))` }, hint: 'Moltiplica ogni termine del primo per ogni termine del secondo.', steps: [`x^2${sg(c)}x${sg(b)}x${sg(b * c)}`, polyTex([b * c, b + c, 1])] };
+  },
+  scomposizione() {
+    let r1 = nz(-8, 8), r2 = nz(-8, 8); if (Math.random() < .25) r2 = -r1;
+    const cs = [r1 * r2, -(r1 + r2), 1];
+    return { title: 'Scomponi in fattori', start: polyTex(cs), expect: { kind: 'expr', form: 'factored', node: `(x-(${r1}))*(x-(${r2}))` }, hint: 'Cerca due numeri con somma uguale al coefficiente di x e prodotto uguale al termine noto.', steps: [`${linTex('x', r1)}${linTex('x', r2)}`] };
+  },
+  equazioni1() {
+    let a, c, x, b, d; do { a = nz(-9, 9); c = nz(-9, 9); x = ri(-9, 9); b = ri(-15, 15); } while (a === c); d = a * x + b - c * x;
+    return { title: 'Risolvi l\'equazione', start: `${term(a, 1, true)}${sg(b)}=${term(c, 1, true)}${sg(d)}`.replace(/\+0|-0(?!\d)/g, ''), expect: { kind: 'sol', values: [x] }, hint: 'Porta le incognite a sinistra e i numeri a destra, poi dividi per il coefficiente di x.', steps: [`${term(a - c, 1, true)}=${d - b}`, `x=${x}`] };
+  },
+  equazioni2() {
+    let r1 = ri(-9, 9), r2 = ri(-9, 9); if (r1 > r2) [r1, r2] = [r2, r1];
+    const s = r1 + r2, p = r1 * r2, D = s * s - 4 * p;
+    return { title: 'Risolvi l\'equazione di secondo grado', start: `${polyTex([p, -s, 1])}=0`, expect: { kind: 'sol', values: r1 === r2 ? [r1] : [r1, r2] }, hint: 'Usa la formula: x = (−b ± √Δ) / 2a, con Δ = b² − 4ac. Oppure scomponi.', steps: [p ? `\\Delta=${s * s}${sg(-4 * p)}=${D}` : `\\Delta=${D}`, `x=\\frac{${s}\\pm${Math.round(Math.sqrt(D))}}{2}`, r1 === r2 ? `x=${r1}` : `x=${r1}\\lor x=${r2}`] };
+  },
+  logaritmi() {
+    const b = [2, 3, 5, 10][ri(0, 3)], k1 = ri(1, b === 10 ? 3 : 4), k2 = ri(1, b === 10 ? 2 : 3);
+    if (Math.random() < .5) return { title: 'Calcola', start: `\\log_{${b}}${b ** k1}`, expect: { kind: 'expr', form: 'number', value: k1 }, hint: `A quale esponente devi elevare ${b} per ottenere ${b ** k1}? Infatti ${b}^${k1} = ${b ** k1}.`, steps: [`\\log_{${b}}${b}^{${k1}}`, `${k1}`] };
+    return { title: 'Calcola usando le proprietà dei logaritmi', start: `\\log_{${b}}${b ** k1}+\\log_{${b}}${b ** k2}`, expect: { kind: 'expr', form: 'number', value: k1 + k2 }, hint: 'La somma di logaritmi con la stessa base è il logaritmo del prodotto.', steps: [`\\log_{${b}}\\left(${b ** k1}\\cdot${b ** k2}\\right)`, `\\log_{${b}}${b ** (k1 + k2)}`, `${k1 + k2}`] };
+  },
+  derivate() {
+    const n = ri(2, 5), m = ri(1, n - 1), a = nz(-6, 6), b = nz(-9, 9), c = ri(-9, 9);
+    const cs = []; cs[n] = a; cs[m] = b; cs[0] = (cs[0] || 0) + c; for (let i = 0; i <= n; i++) cs[i] = cs[i] || 0;
+    const d = cs.map((v, i) => v * i).slice(1);
+    return { title: 'Calcola la derivata', start: polyTex(cs), expect: { kind: 'expr', form: 'expanded', node: d.map((v, i) => `(${v})*x^${i}`).join('+') }, derive: true, hint: 'Per ogni termine: l\'esponente scende a moltiplicare e diminuisce di 1. Le costanti spariscono.', steps: [polyTex(d)] };
+  },
+};
+const TYPES = [
+  ['libero', 'Libero'], ['frazioni', 'Frazioni'], ['potenze', 'Potenze'], ['prodotti', 'Prodotti notevoli'], ['scomposizione', 'Scomposizione'],
+  ['equazioni1', 'Equazioni 1° grado'], ['equazioni2', 'Equazioni 2° grado'], ['logaritmi', 'Logaritmi'], ['derivate', 'Derivate'],
+];
+// La riga soddisfa la richiesta dell'esercizio?
+function checkFinal(ex, line) {
+  const e = ex.expect;
+  if (e.kind === 'sol') {
+    if (line.kind !== 'sol') return false;
+    const got = solSet(line), want = e.values.slice().sort((a, b) => a - b);
+    return sameSet(got, want) && line.sols.every(s => isSimpleNumber(s.node));
+  }
+  if (line.kind !== 'expr') return false;
+  const target = e.node ? M().parse(e.node) : M().parse(String(e.value));
+  if (!sameExpr(target, line.node)) return false;
+  if (e.form === 'number') return isSimpleNumber(line.node);
+  if (e.form === 'power') return isPowerForm(line.node) || isSimpleNumber(line.node);
+  if (e.form === 'expanded') return isExpanded(line.node) && !/\(/.test(line.node.toString().replace(/\^\s*\(\s*-?\d+\s*\)/g, ''));
+  if (e.form === 'factored') return isFactored(line.node);
+  return true;
+}
+// Per le derivate la riga 1 è f(x): i passaggi si confrontano con f'(x), non con f(x)
+function derivTarget(ex) { return { kind: 'expr', node: M().parse(ex.expect.node) }; }
+
+root.MLE = { toMathjs, parseLine, compare, command, GEN, TYPES, checkFinal, derivTarget, roots, isSimpleNumber, isExpanded, isFactored, numTex };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
 (() => {
 'use strict';
 
@@ -5587,6 +5993,14 @@ function outOfHearts() {
   setFoot('', 'Torna al percorso');
 }
 
+// XP guadagnati fuori dalle lezioni (lavagna): contano per l'obiettivo del giorno e per la serie
+function grantXP(xp) {
+  const today = dayKey(), yday = dayKey(addDays(new Date(), -1));
+  if (S.lastDay !== today) { S.streak = S.lastDay === yday ? S.streak + 1 : 1; S.lastDay = today; }
+  S.best = Math.max(S.best, S.streak);
+  S.xp += xp; S.history[today] = (S.history[today] || 0) + xp;
+  save(); renderStats();
+}
 function finish() {
   L.phase = 'done';
   const secs = Math.round((Date.now() - L.start) / 1000);
@@ -5812,11 +6226,33 @@ async function termEnter(raw) {
   else termPush(`<span class="t-err">${tEsc(cmd.split(/\s+/)[0])}: comando non trovato</span> <span class="t-mute">(scrivi help)</span>\n`);
   termRender();
 }
+const LABMODE_KEY = 'pitone.labmode';
+function labMode() { try { return localStorage.getItem(LABMODE_KEY) || (S.subject === 'math' ? 'math' : 'py'); } catch (e) { return S.subject === 'math' ? 'math' : 'py'; } }
 function renderLab() {
-  if ($('#view-lab').dataset.built) { Py.load(); termRender(); return; }
-  $('#view-lab').dataset.built = '1';
+  const v = $('#view-lab');
+  if (!v.dataset.shell) {
+    v.dataset.shell = '1';
+    v.innerHTML = `<div class="v-head"><h1>Laboratorio</h1><p id="lab-sub"></p></div>
+      <div class="subject-switch lab-switch" role="group" aria-label="Strumento">
+        <button data-labmode="py" style="--s1:#58CC02;--s2:#58CC02;--s3:#58A700">${icon('py')}<span>Python<br><small>editor e terminale</small></span></button>
+        <button data-labmode="math" style="--s1:#1CB0F6;--s2:#1CB0F6;--s3:#1899D6">${icon('sigma')}<span>Matematica<br><small>lavagna</small></span></button>
+      </div>
+      <div id="lab-py-wrap"></div><div id="lab-math-wrap"></div>`;
+    $$('[data-labmode]', v).forEach(b => b.onclick = () => { try { localStorage.setItem(LABMODE_KEY, b.dataset.labmode); } catch (e) { /* ignora */ } renderLab(); });
+  }
+  const mode = labMode();
+  $$('[data-labmode]', v).forEach(b => b.setAttribute('aria-pressed', b.dataset.labmode === mode));
+  $('#lab-py-wrap').hidden = mode !== 'py'; $('#lab-math-wrap').hidden = mode !== 'math';
+  $('#lab-sub').textContent = mode === 'py' ? 'Scrivi il programma in main.py, premi Esegui e rispondi agli input() direttamente nel terminale.' : 'Scrivi i passaggi come sul quaderno: controllo ogni riga e ti dico quando il risultato è giusto.';
+  if (mode === 'math') { renderMathLab(); return; }
+  renderPyLab();
+}
+function renderPyLab() {
+  const wrap = $('#lab-py-wrap');
+  if (wrap.dataset.built) { Py.load(); termRender(); return; }
+  wrap.dataset.built = '1';
   let saved = null; try { saved = localStorage.getItem(LAB_KEY); } catch (e) { /* ignora */ }
-  $('#view-lab').innerHTML = `<div class="v-head"><h1>Laboratorio</h1><p>Scrivi il programma in main.py, premi Esegui e rispondi agli input() direttamente nel terminale.</p></div>
+  wrap.innerHTML = `
     <div class="ide">
       <section class="ide-pane" aria-label="Editor">
         <div class="ide-bar">
@@ -5876,6 +6312,211 @@ function renderLab() {
       termRender();
     });
   }
+}
+
+// ───────────────────────── Lavagna di matematica ─────────────────────────
+const MLIBS = {
+  mathlive: { cdn: 'https://cdn.jsdelivr.net/npm/mathlive@0.111.1/mathlive.min.js', local: 'mathlab/mathlive.min.js', sri: 'sha384-fnT74hn6eDg87dvsrlWHThK0ymBGqcjBpUEH0G2PGfpjT1Np0HMWfmheS3xKuzoX' },
+  mathjs: { cdn: 'https://cdn.jsdelivr.net/npm/mathjs@13.2.0/lib/browser/math.js', local: 'mathlab/math.js', sri: 'sha384-d3+I7LvDambpjs3mxCGV0oIwCXzDxj2cyVHley/ulGoS2DijbpfjYixiUSl3nGuj' },
+};
+const ML = { loading: null, ready: false, ex: null, type: 'equazioni1', rows: [], sel: -1, helped: false, solShown: false, awarded: false };
+function loadMathLibs() {
+  if (ML.loading) return ML.loading;
+  const add = lib => new Promise((res, rej) => {
+    const sc = document.createElement('script');
+    if (APP) sc.src = lib.local; else { sc.src = lib.cdn; sc.integrity = lib.sri; sc.crossOrigin = 'anonymous'; }
+    sc.onload = res; sc.onerror = rej; document.head.appendChild(sc);
+  });
+  ML.loading = Promise.all([add(MLIBS.mathlive), add(MLIBS.mathjs)]).then(() => {
+    const MFE = window.MathfieldElement;
+    MFE.fontsDirectory = null; MFE.soundsDirectory = null; MFE.decimalSeparator = ',';
+    try { MFE.locale = 'it'; } catch (e) { /* ignora */ }
+    ML.ready = true; return true;
+  }).catch(() => false);
+  return ML.loading;
+}
+const katexHTML = tex => { try { return window.katex.renderToString(tex, { throwOnError: false, displayMode: false }); } catch (e) { return esc(tex); } };
+const toAscii = latex => { try { return window.MathLive.convertLatexToAsciiMath(latex); } catch (e) { return ''; } };
+function renderMathLab() {
+  const wrap = $('#lab-math-wrap');
+  if (!wrap.dataset.built) {
+    wrap.dataset.built = '1';
+    wrap.innerHTML = `<div class="mlab"><p class="engine-status"><span class="spinner"></span> Preparo la lavagna…</p></div>`;
+    loadMathLibs().then(ok => {
+      if (!ok) { wrap.innerHTML = `<div class="mlab"><p class="engine-status">${icon('x')} Non riesco a caricare la lavagna: controlla la connessione e riapri il Laboratorio.</p></div>`; wrap.dataset.built = ''; return; }
+      buildMathLab(); newExercise(ML.type);
+    });
+  }
+}
+function buildMathLab() {
+  const wrap = $('#lab-math-wrap');
+  wrap.innerHTML = `<div class="mlab">
+    <div class="mlab-types" role="group" aria-label="Tipo di esercizio">${MLE.TYPES.map(([k, n], i) => `<button class="skill" data-mtype="${k}" style="--c:${SKILL_C[i % SKILL_C.length]}">${esc(n)}</button>`).join('')}</div>
+    <section class="mlab-task" aria-live="polite"></section>
+    <div class="mlab-keys" aria-label="Simboli">
+      <button data-ins="\\frac{#@}{#?}" title="Frazione">${katexHTML('\\frac{a}{b}')}</button>
+      <button data-ins="#@^{#?}" title="Potenza">${katexHTML('x^{n}')}</button>
+      <button data-ins="\\sqrt{#?}" title="Radice">${katexHTML('\\sqrt{x}')}</button>
+      <button data-ins="\\log_{#?}#?" title="Logaritmo">${katexHTML('\\log_{b}')}</button>
+      <button data-ins="x" title="x">${katexHTML('x')}</button>
+      <button data-ins="=" title="Uguale">${katexHTML('=')}</button>
+      <button data-ins="\\lor " title="Oppure (tra due soluzioni)">${katexHTML('\\lor')} <small>oppure</small></button>
+      <button data-ins="\\left(#?\\right)" title="Parentesi">${katexHTML('(\;)')}</button>
+    </div>
+    <div class="mlab-sheet" id="mlab-sheet"></div>
+    <div class="mlab-cmds" role="group" aria-label="Comandi">
+      ${[['semplifica', 'Semplifica'], ['sviluppa', 'Sviluppa'], ['scomponi', 'Scomponi'], ['risolvi', 'Risolvi'], ['deriva', 'Deriva'], ['approssima', '≈ Valore']].map(([k, n]) => `<button class="mcmd" data-cmd="${k}">${n}</button>`).join('')}
+    </div>
+    <p class="mlab-cmdnote">I comandi lavorano sulla riga selezionata (quella col numero evidenziato) e aggiungono il risultato in fondo, come in Derive. Se li usi, l'esercizio vale come svolto con aiuto.</p>
+    <details class="mlab-help"><summary>${icon('bulb')} Come si scrive</summary>
+      <ul>
+        <li><b>Frazione</b>: premi <kbd>/</kbd> oppure il tasto ${katexHTML('\\frac{a}{b}')}; scrivi il numeratore, poi la freccia giù per il denominatore.</li>
+        <li><b>Potenza</b>: premi <kbd>^</kbd> e scrivi l'esponente; la freccia destra ti riporta in basso.</li>
+        <li><b>Radice</b>: tasto ${katexHTML('\\sqrt{x}')}, oppure scrivi <kbd>sqrt</kbd>.</li>
+        <li><b>Logaritmo</b>: tasto ${katexHTML('\\log_{b}')}: prima la base, poi l'argomento. <kbd>ln</kbd> è il logaritmo naturale.</li>
+        <li><b>Moltiplicazione</b>: basta scrivere <kbd>2x</kbd>; per i numeri usa <kbd>*</kbd>, che diventa ${katexHTML('\\cdot')}.</li>
+        <li><b>Due soluzioni</b>: ${katexHTML('x=2\\lor x=3')} con il tasto "oppure".</li>
+        <li>Premi <kbd>Invio</kbd> per confermare una riga e passare alla successiva. Sul telefono c'è la tastiera matematica.</li>
+      </ul>
+    </details>
+  </div>`;
+  $$('[data-mtype]', wrap).forEach(b => b.onclick = () => newExercise(b.dataset.mtype));
+  $$('[data-ins]', wrap).forEach(b => b.onclick = () => {
+    const mf = currentField(); if (!mf) return;
+    mf.executeCommand(['insert', b.dataset.ins, { focus: true, format: 'latex' }]); mf.focus();
+  });
+  $$('[data-cmd]', wrap).forEach(b => b.onclick = () => runCommand(b.dataset.cmd));
+}
+function currentField() {
+  const r = ML.rows[ML.sel];
+  if (r && r.mf) return r.mf;
+  const last = ML.rows[ML.rows.length - 1];
+  return last && last.mf;
+}
+function newExercise(type) {
+  ML.type = type; ML.helped = false; ML.solShown = false; ML.awarded = false; ML.gotXP = false;
+  $$('#lab-math-wrap [data-mtype]').forEach(b => b.setAttribute('aria-pressed', b.dataset.mtype === type));
+  ML.ex = type === 'libero' ? null : MLE.GEN[type]();
+  ML.rows = [];
+  if (ML.ex) ML.rows.push({ kind: 'given', latex: ML.ex.start });
+  ML.rows.push({ kind: 'user', latex: '' });
+  ML.sel = ML.rows.length - 1;
+  drawTask(); drawSheet(); validate();
+  setTimeout(() => { const f = currentField(); f && !('ontouchstart' in window) && f.focus(); }, 50);
+}
+function drawTask() {
+  const t = $('#lab-math-wrap .mlab-task');
+  if (!ML.ex) { t.innerHTML = `<p class="card-step">Esercizio libero</p><p class="mlab-free">Scrivi nella riga #1 un'espressione o un'equazione, poi sotto i tuoi passaggi. Controllo che ogni riga sia equivalente alla precedente, e i comandi in basso fanno i calcoli al posto tuo.</p>`; return; }
+  t.innerHTML = `<p class="card-step">${esc(ML.ex.title)}</p>
+    <div class="mlab-q">${katexHTML(ML.ex.derive ? `f(x)=${ML.ex.start}` : ML.ex.start)}</div>
+    <div class="mlab-actions">
+      <button class="btn small" data-act="new">${icon('refresh')} Nuovo</button>
+      <button class="btn ghost small" data-act="hint">${icon('bulb')} Suggerimento</button>
+      <button class="btn ghost small" data-act="sol">Soluzione</button>
+    </div>
+    <p class="hint" hidden>${esc(ML.ex.hint)}</p>`;
+  $('[data-act="new"]', t).onclick = () => newExercise(ML.type);
+  $('[data-act="hint"]', t).onclick = () => { $('.hint', t).hidden = false; };
+  $('[data-act="sol"]', t).onclick = showSolution;
+}
+function makeField(row, i) {
+  const mf = document.createElement('math-field');
+  mf.setAttribute('math-virtual-keyboard-policy', 'auto');
+  mf.setAttribute('placeholder', i === 0 && !ML.ex ? '\\text{scrivi qui}' : '\\text{prossimo passaggio}');
+  mf.value = row.latex || '';
+  let t = null;
+  mf.addEventListener('input', () => { row.latex = mf.value; clearTimeout(t); t = setTimeout(validate, 450); });
+  mf.addEventListener('change', () => { row.latex = mf.value; commitRow(i); });
+  mf.addEventListener('focus', () => selectRow(i));
+  row.mf = mf;
+  return mf;
+}
+function rowLabel(r) { return r.kind === 'given' ? (ML.ex && ML.ex.derive ? 'testo: f(x)' : 'testo') : r.kind === 'tool' ? r.label : r.kind === 'sol' ? 'soluzione' : ''; }
+function drawSheet() {
+  const sh = $('#mlab-sheet'); sh.innerHTML = '';
+  ML.rows.forEach((r, i) => {
+    const el = document.createElement('div');
+    el.className = `mrow ${r.kind}${i === ML.sel ? ' sel' : ''}`;
+    el.innerHTML = `<button class="mnum" title="Seleziona la riga">#${i + 1}</button><div class="mbody"><div class="mexpr"></div><p class="mmsg"></p></div><span class="mstat" aria-hidden="true"></span>${r.kind === 'user' || r.kind === 'tool' || r.kind === 'sol' ? `<button class="mdel" title="Cancella la riga" aria-label="Cancella la riga ${i + 1}">${icon('x')}</button>` : '<span></span>'}`;
+    const box = $('.mexpr', el);
+    if (r.kind === 'user') box.appendChild(makeField(r, i));
+    else { box.innerHTML = katexHTML(r.latex); if (rowLabel(r)) box.insertAdjacentHTML('beforeend', `<span class="mtag">${esc(rowLabel(r))}</span>`); }
+    $('.mnum', el).onclick = () => { selectRow(i); };
+    const del = $('.mdel', el); if (del) del.onclick = () => deleteRow(i);
+    r.el = el; sh.appendChild(el);
+  });
+}
+function selectRow(i) { ML.sel = i; ML.rows.forEach((r, k) => r.el && r.el.classList.toggle('sel', k === i)); }
+function commitRow(i) {
+  validate();
+  const r = ML.rows[i];
+  const last = ML.rows[ML.rows.length - 1];
+  if (r === last && r.latex.trim()) {
+    ML.rows.push({ kind: 'user', latex: '' });
+    ML.sel = ML.rows.length - 1;
+    drawSheet(); validate();
+    setTimeout(() => { const f = ML.rows[ML.sel].mf; f && f.focus(); }, 30);
+  }
+}
+function deleteRow(i) {
+  ML.rows.splice(i, 1);
+  if (!ML.rows.some(r => r.kind === 'user' && !r.latex)) ML.rows.push({ kind: 'user', latex: '' });
+  ML.sel = Math.min(ML.sel, ML.rows.length - 1);
+  drawSheet(); validate();
+}
+function parsedRow(r) { if (!r.latex || !r.latex.trim()) return { kind: 'empty' }; return MLE.parseLine(toAscii(r.latex)); }
+function setRow(r, cls, msg, icn) {
+  if (!r.el) return;
+  r.el.classList.remove('ok', 'ko', 'warn', 'done');
+  if (cls) r.el.classList.add(cls);
+  $('.mmsg', r.el).textContent = msg || '';
+  $('.mstat', r.el).innerHTML = icn ? icon(icn) : '';
+}
+function validate() {
+  let prev = null, prevIdx = -1, chainOk = true;
+  ML.rows.forEach((r, i) => {
+    const p = parsedRow(r); r.p = p;
+    if (p.kind === 'empty') { setRow(r, '', ''); return; }
+    if (r.kind === 'given') { prev = ML.ex && ML.ex.derive ? MLE.derivTarget(ML.ex) : p; prevIdx = i; setRow(r, '', ''); return; }
+    if (!prev) { // prima riga dell'esercizio libero
+      if (p.kind === 'error') setRow(r, 'ko', p.msg, 'x'); else setRow(r, '', p.kind === 'eq' ? 'Equazione di partenza.' : p.kind === 'ineq' ? 'Disequazione: posso scriverla ma non controllarla.' : 'Espressione di partenza.');
+      if (p.kind !== 'error') { prev = p; prevIdx = i; }
+      return;
+    }
+    if (r.kind === 'tool' || r.kind === 'sol') { setRow(r, '', r.note || ''); prev = p.kind === 'error' ? prev : p; prevIdx = i; return; }
+    const c = MLE.compare(prev, p);
+    const ref = ML.ex && ML.ex.derive && prevIdx === 0 ? 'alla derivata di f(x)' : `alla riga #${prevIdx + 1}`;
+    if (c.ok === true) { setRow(r, 'ok', c.msg || `Giusto: equivale ${ref}.`, 'check'); prev = p; prevIdx = i; }
+    else if (c.ok === false) { setRow(r, 'ko', c.msg, 'x'); chainOk = false; }
+    else { setRow(r, 'warn', c.msg, 'bulb'); prev = p; prevIdx = i; }
+    if (ML.ex && c.ok === true && MLE.checkFinal(ML.ex, p)) {
+      const helped = ML.helped || ML.solShown;
+      if (!ML.awarded) { ML.awarded = true; ML.gotXP = !helped; Sound.play('good'); if (!helped) grantXP(5); }
+      setRow(r, 'done', ML.gotXP ? 'Risultato corretto! +5 XP' : 'Risultato corretto (con aiuto: niente XP).', 'trophy');
+    }
+  });
+}
+function runCommand(cmd) {
+  let idx = ML.sel; let r = ML.rows[idx];
+  if (!r || !r.latex || !r.latex.trim()) { for (idx = ML.rows.length - 1; idx >= 0 && !(ML.rows[idx].latex || '').trim(); idx--); r = ML.rows[idx]; }
+  if (!r) return;
+  const res = MLE.command(cmd, parsedRow(r));
+  const names = { semplifica: 'Semplifica', sviluppa: 'Sviluppa', scomponi: 'Scomponi', risolvi: 'Risolvi', deriva: 'Deriva', approssima: 'Valore' };
+  if (res.error) { setRow(r, 'warn', res.error, 'bulb'); return; }
+  ML.helped = true;
+  const empty = ML.rows.length && ML.rows[ML.rows.length - 1].kind === 'user' && !ML.rows[ML.rows.length - 1].latex;
+  const at = empty ? ML.rows.length - 1 : ML.rows.length;
+  ML.rows.splice(at, 0, { kind: 'tool', latex: res.tex, label: `${names[cmd]} #${idx + 1}`, note: res.approx ? 'Valore approssimato.' : res.note || '' });
+  ML.sel = ML.rows.length - 1;
+  drawSheet(); validate(); Sound.play('tap');
+}
+function showSolution() {
+  if (!ML.ex) return;
+  ML.solShown = true;
+  const empty = ML.rows[ML.rows.length - 1];
+  const at = empty && empty.kind === 'user' && !empty.latex ? ML.rows.length - 1 : ML.rows.length;
+  ML.rows.splice(at, 0, ...ML.ex.steps.map(st => ({ kind: 'sol', latex: st })));
+  drawSheet(); validate();
 }
 
 // ───────────────────────── Profilo ─────────────────────────

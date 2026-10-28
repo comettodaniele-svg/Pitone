@@ -734,6 +734,14 @@ details.acc summary .wk { background: var(--u); color: var(--uf); }
 .mlab-types { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 8px; scrollbar-width: thin; }
 .mlab-types .skill { flex: none; padding: 8px 12px; font-size: 14.5px; }
 .mlab-types .skill[aria-pressed="true"] { background: var(--c); color: #fff; border-color: var(--c); box-shadow: 0 3px 0 color-mix(in srgb, var(--c) 70%, black); }
+.mlab-levels { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: -6px; }
+.mlab-levels[hidden] { display: none; }
+.mlab-levels > span { font-weight: 800; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-right: 2px; }
+.mlevel { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); color: var(--c); font: inherit; font-size: 11px; letter-spacing: 1px; cursor: pointer; box-shadow: 0 2px 0 var(--line); }
+.mlevel b { font-size: 14.5px; letter-spacing: 0; color: var(--ink); }
+.mlevel[aria-pressed="true"] { background: var(--c); border-color: var(--c); color: #fff; box-shadow: 0 3px 0 color-mix(in srgb, var(--c) 70%, black); }
+.mlevel[aria-pressed="true"] b { color: #fff; }
+@media (max-width: 480px) { .mlab-levels { flex-wrap: nowrap; } .mlab-levels > span { display: none; } .mlevel { flex: 1 1 0; min-width: 0; justify-content: center; padding: 7px 6px; gap: 4px; font-size: 9px; } .mlevel b { font-size: 14px; } }
 .mlab-task { background: var(--surface); border: 2px solid var(--line); border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
 .mlab-q { font-size: 24px; overflow-x: auto; overflow-y: hidden; padding: .3em 0; }
 .mlab-free { color: var(--muted); }
@@ -749,6 +757,7 @@ details.acc summary .wk { background: var(--u); color: var(--uf); }
 .mrow.sel .mnum { color: var(--brand); }
 .mbody { min-width: 0; }
 .mexpr { min-height: 44px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 22px; overflow-x: auto; overflow-y: hidden; padding: .25em 0; }
+.mexpr > .katex, .mlab-q .katex { white-space: nowrap; flex: none; }
 .mexpr math-field { flex: 1; min-width: 0; width: 100%; font-size: 22px; background: color-mix(in srgb, var(--surface) 85%, transparent); color: var(--ink); border: 2px solid var(--line); border-radius: 12px; padding: 6px 10px; --caret-color: var(--brand); --selection-background-color: var(--sel); --contains-highlight-background-color: transparent; --placeholder-color: var(--muted); }
 .mexpr math-field:focus-within { border-color: var(--brand); outline: none; }
 .mtag { font: 800 11.5px var(--font-body); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); background: var(--surface-2); border-radius: 6px; padding: 2px 7px; }
@@ -4349,31 +4358,61 @@ function token(s, i) { // un numero o un nome a partire da i (spazi saltati)
   const m = /^[A-Za-z0-9.]+/.exec(s.slice(i));
   return m ? { text: m[0], end: i + m[0].length } : null;
 }
+const ARGFN = /^(sqrt|nthRoot|sin|cos|tan|abs|exp)\s*\(/;
+function takeArg(s, i) { // argomento di log/ln: numero, nome, (gruppo), funzione(...), frazione (a)/(b), con eventuali potenze
+  while (s[i] === ' ') i++;
+  let text, end;
+  const fm = ARGFN.exec(s.slice(i));
+  if (fm) { const j = group(s, i + fm[0].length - 1); if (j < 0) return null; text = s.slice(i, j + 1); end = j + 1; }
+  else if (s.startsWith('root(', i)) { const j = group(s, i + 4); if (j < 0) return null; let t = j + 1; while (s[t] === ' ') t++; const g = token(s, t); if (!g) return null; text = s.slice(i, j + 1) + g.text; end = g.end; }
+  else { const t = token(s, i); if (!t) return null; text = t.text; end = t.end; }
+  if (text[0] === '(' && s[end] === '/' && s[end + 1] === '(') { const j = group(s, end + 1); if (j > 0) { text += s.slice(end, j + 1); end = j + 1; } }
+  for (;;) { let t = end; while (s[t] === ' ') t++; if (s[t] !== '^') break; const e = token(s, t + 1); if (!e) break; text += '^' + e.text; end = e.end; }
+  return { text, end };
+}
 function toMathjs(a) {
   let s = String(a || '');
-  s = s.replace(/\bxx\b/g, '*').replace(/[·×⋅]/g, '*').replace(/[÷:]/g, '/').replace(/−/g, '-');
+  s = s.replace(/\bxx\b/g, '*').replace(/[·×⋅]/g, '*').replace(/÷/g, ':').replace(/−/g, '-');
+  s = s.replace(/\\[{}]/g, m => m === '\\{' ? '(' : ')').replace(/[\[{]/g, '(').replace(/[\]}]/g, ')');
   s = s.replace(/(\d)\s*,\s*(\d)/g, '$1.$2');
-  s = s.replace(/\blog\s*\(\s*([^,()]+)\s*\)/g, 'log10($1)').replace(/\bln\b/g, 'log');
-  // log _b(arg) → log(arg, b)
-  for (let guard = 0; guard < 20; guard++) {
-    const m = /\blog\s*_\s*/.exec(s); if (!m) break;
-    const b = token(s, m.index + m[0].length); if (!b) break;
-    const arg = token(s, b.end); if (!arg) break;
-    // l'argomento comprende l'eventuale potenza: log_5 5^2 = log_5(5^2)
-    let end = arg.end, text = arg.text;
-    for (;;) { let t = end; while (s[t] === ' ') t++; if (s[t] !== '^') break; const e = token(s, t + 1); if (!e) break; text += '^' + e.text; end = e.end; }
-    s = s.slice(0, m.index) + `log(${text}, ${b.text})` + s.slice(end);
+  // a : (b)/(c) → a / ((b)/(c)): il divisore è tutta la frazione
+  for (let guard = 0; guard < 40; guard++) {
+    const k = s.indexOf(':'); if (k < 0) break;
+    const t = token(s, k + 1);
+    let rep = null;
+    if (t && t.text[0] === '(' && s[t.end] === '/' && s[t.end + 1] === '(') { const j = group(s, t.end + 1); if (j > 0) rep = { text: `(${t.text}/${s.slice(t.end + 1, j + 1)})`, end: j + 1 }; }
+    s = rep ? s.slice(0, k) + '/' + rep.text + s.slice(rep.end) : s.slice(0, k) + '/' + s.slice(k + 1);
   }
+  // logaritmi: log_b arg → log(arg, b); ln arg → log(arg); log arg → log10(arg)
+  for (let guard = 0; guard < 30; guard++) {
+    const m = /(?<![A-Za-z])(log|ln)(?![A-Za-z0-9])/.exec(s); if (!m) break;
+    let i = m.index + m[0].length, out = null;
+    while (s[i] === ' ') i++;
+    if (m[1] === 'log' && s[i] === '_') {
+      i++; while (s[i] === ' ') i++;
+      let base;
+      if (s[i] === '(') { const j = group(s, i); if (j < 0) break; base = { text: s.slice(i, j + 1), end: j + 1 }; }
+      else { const bm = /^(\d+(\.\d+)?|[A-Za-z])/.exec(s.slice(i)); if (!bm) break; base = { text: bm[0], end: i + bm[0].length }; }
+      const arg = takeArg(s, base.end); if (!arg) break;
+      out = { text: `\u0001(${arg.text}, ${base.text})`, end: arg.end };
+    } else {
+      const arg = takeArg(s, i); if (!arg) break;
+      out = { text: `${m[1] === 'ln' ? '\u0001' : '\u0002'}(${arg.text})`, end: arg.end };
+    }
+    s = s.slice(0, m.index) + out.text + s.slice(out.end);
+  }
+  s = s.replace(/\u0001/g, 'log').replace(/\u0002/g, 'log10');
   // root(n)(x) → nthRoot(x, n)
   for (let guard = 0; guard < 20; guard++) {
-    const k = s.indexOf('root('); if (k < 0 || (k > 0 && /[a-zA-Z]/.test(s[k - 1]))) break;
+    const k = s.search(/(?<![A-Za-z])root\(/); if (k < 0) break;
     const j = group(s, k + 4); if (j < 0) break;
     let t = j + 1; while (s[t] === ' ') t++;
     const arg = token(s, t); if (!arg) break;
     s = s.slice(0, k) + `nthRoot(${arg.text}, ${s.slice(k + 5, j)})` + s.slice(arg.end);
   }
   s = s.replace(/\b([a-z])_\{?\d+\}?/gi, '$1');      // x_1 → x
-  s = s.replace(/\bpi\b/g, 'pi');
+  // moltiplicazione sottintesa: x(…) e (…)(…) non sono chiamate di funzione
+  s = s.replace(/(^|[^A-Za-z])([a-z])\s*\(/g, '$1$2*(').replace(/\)\s*\(/g, ')*(');
   return s.trim();
 }
 
@@ -4434,11 +4473,18 @@ function sameExpr(a, b) {
   }
   return good >= 4;
 }
-// radici reali di f(v) in [-60, 60] (scansione + bisezione, anche radici doppie)
+// radici reali di f(v): esatte fino al grado 2, altrimenti in [-150, 150] (scansione + bisezione, anche radici doppie)
 function roots(f, v) {
+  const pi = polyInfo(f);
+  if (pi && pi.v === v) { // grado ≤ 2: soluzione esatta
+    const c = pi.c.slice(); while (c.length && Math.abs(c[c.length - 1]) < 1e-12) c.pop();
+    const fix = r => { if (Math.abs(r - Math.round(r)) < 1e-9) return Math.round(r); const q = toFrac(r, 1000, 1e-9); return q ? q[0] / q[1] : r; };
+    if (c.length === 2) return [fix(-c[0] / c[1])];
+    if (c.length === 3) { const [k, b, a] = c, D = b * b - 4 * a * k; if (D < -1e-12) return []; if (Math.abs(D) < 1e-12) return [fix(-b / (2 * a))]; const sq = Math.sqrt(D); return [fix((-b - sq) / (2 * a)), fix((-b + sq) / (2 * a))].sort((x, y) => x - y); }
+  }
   const c = f.compile(), F = x => val(c, { [v]: x });
   const out = [], push = r => { if (!out.some(q => Math.abs(q - r) < 1e-6)) out.push(r); };
-  const N = 24000, A = -60, B = 60, h = (B - A) / N;
+  const N = 60000, A = -150, B = 150, h = (B - A) / N;
   let px = A, py = F(A);
   for (let i = 1; i <= N; i++) {
     const x = A + i * h, y = F(x);
@@ -4490,13 +4536,13 @@ function toFrac(x, maxD = 1000, tol = 1e-9) { // frazione vicina a x, se c'è
 }
 function fracTex(n, d) { if (d < 0) { n = -n; d = -d; } const g = gcd(n, d); n /= g; d /= g; return d === 1 ? String(n) : `${n < 0 ? '-' : ''}\\frac{${Math.abs(n)}}{${d}}`; }
 function fmtNum(x) { const f = toFrac(x, 100); if (f) return f[1] === 1 ? String(f[0]) : `${f[0]}/${f[1]}`; return String(+x.toFixed(4)).replace('.', ','); }
-function numTex(x) { const f = toFrac(x, 1000); if (f) return fracTex(f[0], f[1]); const r = toSurd(x); return r || String(+x.toFixed(6)).replace('.', '{,}'); }
+function numTex(x) { const f = toFrac(x, 1000); if (f) return fracTex(f[0], f[1]); const r = toSurd(x); if (r) return r; const g = toFrac(x, 100000, 1e-13); return g ? fracTex(g[0], g[1]) : String(+x.toFixed(6)).replace('.', '{,}'); }
 function toSurd(x) { // a + b√c con a, b razionali semplici
   for (let c = 2; c <= 200; c++) { if (Number.isInteger(Math.sqrt(c))) continue; let sq = false; for (let k = 2; k * k <= c; k++) if (c % (k * k) === 0) { sq = true; break; } if (sq) continue;
     for (let d = 1; d <= 12; d++) for (let bn = -24; bn <= 24; bn++) { if (!bn) continue; const a = x - bn / d * Math.sqrt(c); const fa = toFrac(a, 12); if (fa) { const bt = fracTex(bn, d); const bs = bt === '1' ? '' : bt === '-1' ? '-' : bt; const at = fa[0] ? fracTex(fa[0], fa[1]) : ''; const term = `${bs}\\sqrt{${c}}`; return at ? `${at}${term.startsWith('-') ? '' : '+'}${term}` : term; } } }
   return null;
 }
-function polyInfo(node) { try { const r = M().rationalize(node, {}, true); if (r.variables.length !== 1 || !r.coefficients || !r.coefficients.length) return null; if (!r.denominator || isNumericNode(r.denominator)) { const den = r.denominator ? Number(r.denominator.evaluate()) : 1; return { v: r.variables[0], c: r.coefficients.map(x => Number(x) / den) }; } return null; } catch (e) { return null; } }
+function polyInfo(node) { try { const r = M().rationalize(node, {}, true); if (r.variables.length !== 1 || !r.coefficients || !r.coefficients.length) return null; if (!r.denominator || isNumericNode(r.denominator)) { const den = r.denominator ? Number(r.denominator.evaluate()) : 1; const c = r.coefficients.map(x => Number(x) / den); while (c.length > 1 && Math.abs(c[c.length - 1]) < 1e-12) c.pop(); return { v: r.variables[0], c }; } return null; } catch (e) { return null; } }
 
 // ── forme finali ──
 const strip = n => { while (n && n.isParenthesisNode) n = n.content; return n; };
@@ -4521,14 +4567,46 @@ function isFactored(n) {
   walk(n);
   const nonConst = factors.filter(f => vars(f).length);
   if (nonConst.length < 2) return false;
-  return nonConst.every(f => { const p = polyInfo(f); return p && p.c.length <= 2 || (f.isSymbolNode); });
+  return nonConst.every(f => { if (f.isSymbolNode) return true; const p = polyInfo(f); if (!p) return false; if (p.c.length <= 2) return true; if (p.c.length === 3) { const [c0, c1, c2] = p.c; return c1 * c1 - 4 * c2 * c0 < 0; } return false; });
+}
+function isMonomialForm(n) { // costante per potenze di lettere, ogni lettera una volta sola (anche come frazione)
+  const seen = new Set(); let ok = true, consts = 0;
+  const walk = (m, top) => { m = strip(m);
+    if (m.isOperatorNode && (m.op === '*' || m.op === '/')) { m.args.forEach(a => walk(a)); return; }
+    if (m.isOperatorNode && m.fn === 'unaryMinus') { walk(m.args[0]); return; }
+    if (m.isConstantNode) { consts++; return; }
+    let base = m;
+    if (m.isOperatorNode && m.op === '^') { if (!isSimpleNumber(m.args[1]) && !(strip(m.args[1]).isOperatorNode && strip(m.args[1]).fn === 'unaryMinus')) { ok = false; return; } base = strip(m.args[0]); }
+    if (!base.isSymbolNode) { ok = false; return; }
+    if (seen.has(base.name)) ok = false; seen.add(base.name);
+  };
+  walk(n, true);
+  return ok && consts <= 2;
 }
 function isPowerForm(n) { n = strip(n); if (n.isSymbolNode) return true; if (n.isOperatorNode && n.op === '^' && strip(n.args[0]).isSymbolNode && isSimpleNumber(n.args[1])) return true; if (n.isOperatorNode && n.op === '/' && isSimpleNumber(n.args[0]) && isPowerForm(n.args[1])) return true; return false; }
 
 // ── comandi stile Derive ──
 const MF = () => root.__mFrac || (root.__mFrac = M().create(M().all, { number: 'Fraction' }));
 function texOf(node) { return node.toTex({ parenthesis: 'auto', implicit: 'hide' }).replace(/\\cdot/g, '\\cdot ').replace(/~/g, ''); }
+function ratEval(n) { // valore razionale esatto di un'espressione numerica (+ − · : e potenze intere), o null
+  const ok = r => r && Number.isSafeInteger(r.n) && Number.isSafeInteger(r.d) && r.d !== 0 ? r : null;
+  if (!n) return null;
+  if (n.isParenthesisNode) return ratEval(n.content);
+  if (n.isConstantNode) { const x = Number(n.value); if (!Number.isFinite(x)) return null; const f = toFrac(x, 1000000, 1e-15); return f ? new Q(f[0], f[1]) : null; }
+  if (n.isOperatorNode) {
+    const a = n.args.map(ratEval); if (a.some(x => !x)) return null;
+    if (n.fn === 'unaryMinus') return ok(new Q(-a[0].n, a[0].d));
+    if (n.fn === 'unaryPlus') return a[0];
+    if (n.fn === 'add') return ok(a[0].add(a[1]));
+    if (n.fn === 'subtract') return ok(a[0].sub(a[1]));
+    if (n.fn === 'multiply') return ok(a[0].mul(a[1]));
+    if (n.fn === 'divide') return a[1].n === 0 ? null : ok(a[0].div(a[1]));
+    if (n.fn === 'pow') { if (a[1].d !== 1 || Math.abs(a[1].n) > 30 || (a[0].n === 0 && a[1].n < 0)) return null; return ok(a[0].pow(a[1].n)); }
+  }
+  return null;
+}
 function exactValueTex(src) {
+  try { const r = ratEval(M().parse(src)); if (r) return fracTex(r.n, r.d); } catch (e) { /* non razionale */ }
   try { const v = MF().evaluate(src); if (v && typeof v.n === 'number' && typeof v.d === 'number') return fracTex(v.s * v.n, v.d); } catch (e) { /* non razionale */ }
   try { const x = Number(M().evaluate(src)); if (Number.isFinite(x)) return numTex(x); } catch (e) { /* ignora */ }
   return null;
@@ -4603,74 +4681,253 @@ function command(cmd, line) {
   } catch (e) { return { error: 'Non riesco a calcolarlo.' }; }
 }
 
-// ── esercizi generati ──
+// ── esercizi generati (3 livelli, più modelli per tipo) ──
 const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 const nz = (a, b) => { let v; do v = ri(a, b); while (!v); return v; };
+const pick = arr => arr[ri(0, arr.length - 1)];
 const sg = (k, first) => k < 0 ? `-${Math.abs(k)}` : (first ? `${k}` : `+${k}`);
-const term = (c, p, first) => { if (!c) return ''; const a = Math.abs(c); const body = p === 0 ? `${a}` : `${a === 1 ? '' : a}x${p > 1 ? `^{${p}}` : ''}`; return (c < 0 ? '-' : first ? '' : '+') + body; };
-const polyTex = cs => { let s = ''; for (let p = cs.length - 1; p >= 0; p--) { const t = term(cs[p], p, !s); s += t; } return s || '0'; };
+const term = (c, p, first, v = 'x') => { if (!c) return ''; const a = Math.abs(c); const body = p === 0 ? `${a}` : `${a === 1 ? '' : a}${v}${p > 1 ? `^{${p}}` : ''}`; return (c < 0 ? '-' : first ? '' : '+') + body; };
+const polyTex = (cs, v = 'x') => { let s = ''; for (let p = cs.length - 1; p >= 0; p--) s += term(cs[p] || 0, p, !s, v); return s || '0'; };
+const polyStr = (cs, v = 'x') => cs.map((c, i) => `(${c})*${v}^${i}`).join('+') || '0';
+// frazioni esatte per costruire i passaggi
+class Q {
+  constructor(n, d = 1) { if (d < 0) { n = -n; d = -d; } const g = gcd(n, d); this.n = n / g; this.d = d / g; }
+  add(o) { return new Q(this.n * o.d + o.n * this.d, this.d * o.d); }
+  sub(o) { return new Q(this.n * o.d - o.n * this.d, this.d * o.d); }
+  mul(o) { return new Q(this.n * o.n, this.d * o.d); }
+  div(o) { return new Q(this.n * o.d, this.d * o.n); }
+  pow(k) { return k >= 0 ? new Q(this.n ** k, this.d ** k) : new Q(this.d ** -k, this.n ** -k); }
+  get v() { return this.n / this.d; }
+  tex() { return fracTex(this.n, this.d); }
+  texP() { const t = this.tex(); return this.n < 0 ? `\\left(${t}\\right)` : t; } // tra parentesi se negativo
+}
+const q = (n, d = 1) => new Q(n, d);
+const rq = (maxN = 9, dens = [2, 3, 4, 5, 6]) => { let f; do f = q(ri(1, maxN), pick(dens)); while (f.d === 1); return f; };
+// equazione con i lati eventualmente scambiati, per variare la disposizione
+const eqTex = (L, R) => Math.random() < .35 ? `${R}=${L}` : `${L}=${R}`;
+const solTex = vals => vals.map(v => `x=${v.tex ? v.tex() : numTex(v)}`).join('\\lor ');
+const expr = o => Object.assign({ kind: 'expr' }, o);
+
 const GEN = {
-  frazioni() {
-    let a, b, c, d; do { b = ri(2, 9); d = ri(2, 9); a = ri(1, b * 2); c = ri(1, d * 2); } while (b === d || gcd(a, b) !== 1 || gcd(c, d) !== 1);
-    const op = Math.random() < .5 ? '+' : '-';
-    const n = op === '+' ? a * d + c * b : a * d - c * b, den = b * d;
-    return { title: 'Calcola e semplifica', start: `\\frac{${a}}{${b}}${op}\\frac{${c}}{${d}}`, expect: { kind: 'expr', form: 'number', value: n / den }, hint: 'Porta allo stesso denominatore, somma i numeratori e semplifica.', steps: [`\\frac{${a * d}${op}${c * b}}{${den}}`, fracTex(n, den)] };
+  espressioni(level) {
+    if (level === 'facile') {
+      const t = ri(0, 2);
+      if (t === 0) { const a = ri(2, 20), b = ri(2, 9), c = ri(2, 9), d = ri(1, 15); return { title: 'Calcola l\'espressione', start: `${a}+${b}\\cdot ${c}-${d}`, expect: expr({ form: 'number', value: a + b * c - d }), hint: 'Prima le moltiplicazioni, poi somme e sottrazioni da sinistra a destra.', steps: [`${a}+${b * c}-${d}`, `${a + b * c - d}`] }; }
+      if (t === 1) { const a = ri(6, 15), b = ri(1, a - 1), c = ri(2, 6), e = ri(2, 6), d = e * ri(2, 6); return { title: 'Calcola l\'espressione', start: `\\left(${a}-${b}\\right)\\cdot ${c}+${d}:${e}`, expect: expr({ form: 'number', value: (a - b) * c + d / e }), hint: 'Prima la parentesi, poi moltiplicazioni e divisioni, infine la somma.', steps: [`${a - b}\\cdot ${c}+${d}:${e}`, `${(a - b) * c}+${d / e}`, `${(a - b) * c + d / e}`] }; }
+      const a = ri(2, 5), b = ri(1, 9), c = ri(5, 12), d = ri(1, c - 1), e = ri(2, 4), f = ri(1, 20);
+      const in1 = c - d, in2 = b + in1 * e;
+      return { title: 'Calcola l\'espressione', start: `${a}\\cdot\\left[${b}+\\left(${c}-${d}\\right)\\cdot ${e}\\right]-${f}`, expect: expr({ form: 'number', value: a * in2 - f }), hint: 'Lavora dalle parentesi più interne verso l\'esterno: prima le tonde, poi le quadre.', steps: [`${a}\\cdot\\left[${b}+${in1}\\cdot ${e}\\right]-${f}`, `${a}\\cdot\\left[${b}+${in1 * e}\\right]-${f}`, `${a}\\cdot ${in2}-${f}`, `${a * in2 - f}`] };
+    }
+    if (level === 'medio') {
+      const t = ri(0, 2);
+      if (t === 0) { const A = rq(), B = rq(), C = rq(), D = rq(); const s1 = A.add(B), s2 = s1.mul(C), r = s2.sub(D);
+        return { title: 'Calcola l\'espressione', start: `\\left(${A.tex()}+${B.tex()}\\right)\\cdot ${C.tex()}-${D.tex()}`, expect: expr({ form: 'number', value: r.v }), hint: 'Somma le frazioni nella parentesi (denominatore comune), poi moltiplica, poi sottrai.', steps: [`${s1.tex()}\\cdot ${C.tex()}-${D.tex()}`, `${s2.tex()}-${D.tex()}`, r.tex()] }; }
+      if (t === 1) { const A = rq(5), B = rq(), C = rq(); const p = A.pow(2), d = p.div(B), r = d.add(C);
+        return { title: 'Calcola l\'espressione', start: `\\left(${A.tex()}\\right)^{2}:${B.tex()}+${C.tex()}`, expect: expr({ form: 'number', value: r.v }), hint: 'Prima la potenza; dividere per una frazione vuol dire moltiplicare per la reciproca.', steps: [`${p.tex()}:${B.tex()}+${C.tex()}`, `${d.tex()}+${C.tex()}`, r.tex()] }; }
+      const A = rq(), B = rq(), C = rq(), D = rq(); const s1 = A.sub(B), s2 = s1.div(C), s3 = s2.add(q(1)), r = s3.mul(D);
+      return { title: 'Calcola l\'espressione', start: `\\left[\\left(${A.tex()}-${B.tex()}\\right):${C.tex()}+1\\right]\\cdot ${D.tex()}`, expect: expr({ form: 'number', value: r.v }), hint: 'Dalle tonde alle quadre: differenza, divisione, poi aggiungi 1 e moltiplica.', steps: [`\\left[${s1.texP()}:${C.tex()}+1\\right]\\cdot ${D.tex()}`, `\\left[${s2.texP()}+1\\right]\\cdot ${D.tex()}`, `${s3.texP()}\\cdot ${D.tex()}`, r.tex()] };
+    }
+    const t = ri(0, 2);
+    if (t === 0) { const A = rq(3, [2, 3, 4]), B = rq(), C = rq(), D = rq(); const p = A.pow(-2), m = p.mul(B), s1 = m.sub(C), dv = s1.div(D), r = dv.pow(2);
+      return { title: 'Calcola l\'espressione', start: `\\left\\lbrace\\left[\\left(${A.tex()}\\right)^{-2}\\cdot ${B.tex()}-${C.tex()}\\right]:${D.tex()}\\right\\rbrace^{2}`, expect: expr({ form: 'number', value: r.v }), hint: 'Esponente negativo: la potenza della frazione reciproca. Poi dalle quadre alle graffe.', steps: [`\\left\\lbrace\\left[${p.tex()}\\cdot ${B.tex()}-${C.tex()}\\right]:${D.tex()}\\right\\rbrace^{2}`, `\\left\\lbrace\\left[${m.tex()}-${C.tex()}\\right]:${D.tex()}\\right\\rbrace^{2}`, `\\left\\lbrace${s1.texP()}:${D.tex()}\\right\\rbrace^{2}`, `\\left(${dv.tex()}\\right)^{2}`, r.tex()] }; }
+    if (t === 1) { const b = pick([q(2, 3), q(3, 2), q(1, 2), q(3, 4), q(2, 5)]), m = ri(3, 6), n = ri(1, 4), k = ri(2, 6), C = rq(); const e = m - n - k, pv = b.pow(e), r = pv.add(C);
+      return { title: 'Calcola usando le proprietà delle potenze', start: `\\left(${b.tex()}\\right)^{${m}}\\cdot\\left(${b.tex()}\\right)^{-${n}}:\\left(${b.tex()}\\right)^{${k}}+${C.tex()}`, expect: expr({ form: 'number', value: r.v }), hint: 'Stessa base: somma e sottrai gli esponenti, poi calcola la potenza.', steps: [`\\left(${b.tex()}\\right)^{${m}-${n}-${k}}+${C.tex()}`, `\\left(${b.tex()}\\right)^{${e}}+${C.tex()}`, `${pv.tex()}+${C.tex()}`, r.tex()] }; }
+    const A = rq(4, [3, 4, 5]), B = rq(), C = rq(), D = rq(), K = rq(); const o1 = q(1).sub(A), o2 = o1.pow(2), o3 = C.sub(D), o4 = B.mul(o3), o5 = o2.add(o4), r = o5.div(K);
+    return { title: 'Calcola l\'espressione', start: `\\left[\\left(1-${A.tex()}\\right)^{2}+${B.tex()}\\cdot\\left(${C.tex()}-${D.tex()}\\right)\\right]:${K.tex()}`, expect: expr({ form: 'number', value: r.v }), hint: 'Calcola le due tonde, poi la potenza e il prodotto, la somma nella quadra e infine la divisione.', steps: [`\\left[\\left(${o1.tex()}\\right)^{2}+${B.tex()}\\cdot ${o3.texP()}\\right]:${K.tex()}`, `\\left[${o2.tex()}+${o4.texP()}\\right]:${K.tex()}`, `${o5.texP()}:${K.tex()}`, r.tex()] };
   },
-  potenze() {
-    const m = ri(2, 7), n = ri(2, 7), k = ri(1, m + n + 2), r = m + n - k;
-    return { title: 'Semplifica (usa le proprietà delle potenze)', start: `\\frac{x^{${m}}\\cdot x^{${n}}}{x^{${k}}}`, expect: { kind: 'expr', form: 'power', node: `x^(${r})` }, hint: 'Stessa base: nel prodotto gli esponenti si sommano, nel quoziente si sottraggono.', steps: [`x^{${m}+${n}-${k}}`, r === 0 ? '1' : r === 1 ? 'x' : `x^{${r}}`] };
+  frazioni(level) {
+    if (level === 'facile') { const A = rq(), B = rq(); const op = Math.random() < .5 ? '+' : '-'; const r = op === '+' ? A.add(B) : A.sub(B);
+      return { title: 'Calcola e semplifica', start: `${A.tex()}${op}${B.tex()}`, expect: expr({ form: 'number', value: r.v }), hint: 'Porta allo stesso denominatore, somma i numeratori e semplifica.', steps: [`\\frac{${A.n * (r.d === 1 ? 1 : 1) * (A.d === B.d ? 1 : B.d)}${op}${B.n * (A.d === B.d ? 1 : A.d)}}{${A.d === B.d ? A.d : A.d * B.d}}`, r.tex()] }; }
+    if (level === 'medio') {
+      if (Math.random() < .5) { const A = rq(), B = rq(), C = rq(); const s1 = A.add(B), r = s1.sub(C); return { title: 'Calcola e semplifica', start: `${A.tex()}+${B.tex()}-${C.tex()}`, expect: expr({ form: 'number', value: r.v }), hint: 'Trova il minimo comune multiplo dei denominatori.', steps: [`${s1.tex()}-${C.tex()}`, r.tex()] }; }
+      const A = rq(), B = rq(), C = rq(); const m = A.mul(B), r = m.div(C); return { title: 'Calcola e semplifica', start: `${A.tex()}\\cdot ${B.tex()}:${C.tex()}`, expect: expr({ form: 'number', value: r.v }), hint: 'Moltiplica numeratori e denominatori; dividere è moltiplicare per la reciproca. Semplifica in croce.', steps: [`${m.tex()}:${C.tex()}`, `${m.tex()}\\cdot ${C.pow(-1).tex()}`, r.tex()] };
+    }
+    const A = rq(), B = rq(), C = rq(); const num = A.add(q(1)), den = B.sub(C).n ? B.sub(C) : B.add(C), opD = B.sub(C).n ? '-' : '+', r = num.div(den);
+    return { title: 'Semplifica la frazione composta', start: `\\frac{${A.tex()}+1}{${B.tex()}${opD}${C.tex()}}`, expect: expr({ form: 'number', value: r.v }), hint: 'Calcola a parte numeratore e denominatore, poi dividi.', steps: [`\\frac{${num.tex()}}{${den.tex()}}`, `${num.texP()}:${den.texP()}`, r.tex()] };
   },
-  prodotti() {
-    const t = ri(0, 2), a = ri(1, 3), b = nz(-7, 7);
-    const lin = `${a === 1 ? '' : a}x${sg(b)}`;
-    if (t === 0) return { title: 'Sviluppa il quadrato del binomio', start: `\\left(${lin}\\right)^{2}`, expect: { kind: 'expr', form: 'expanded', node: `(${a}x+(${b}))^2` }, hint: 'Quadrato del primo, più il doppio prodotto, più il quadrato del secondo.', steps: [polyTex([b * b, 2 * a * b, a * a])] };
-    if (t === 1) { const bb = Math.abs(b); return { title: 'Sviluppa la somma per la differenza', start: `\\left(${a === 1 ? '' : a}x+${bb}\\right)\\left(${a === 1 ? '' : a}x-${bb}\\right)`, expect: { kind: 'expr', form: 'expanded', node: `(${a}x)^2-${bb * bb}` }, hint: 'Somma per differenza: quadrato del primo meno quadrato del secondo.', steps: [polyTex([-bb * bb, 0, a * a])] }; }
-    const c = nz(-7, 7);
-    return { title: 'Sviluppa il prodotto', start: `\\left(x${sg(b)}\\right)\\left(x${sg(c)}\\right)`, expect: { kind: 'expr', form: 'expanded', node: `(x+(${b}))*(x+(${c}))` }, hint: 'Moltiplica ogni termine del primo per ogni termine del secondo.', steps: [`x^2${sg(c)}x${sg(b)}x${sg(b * c)}`, polyTex([b * c, b + c, 1])] };
+  potenze(level) {
+    if (level === 'facile') {
+      const t = ri(0, 1);
+      if (t === 0) { const m = ri(2, 7), n = ri(2, 7), k = ri(1, m + n + 2), r = m + n - k; return { title: 'Semplifica (proprietà delle potenze)', start: `\\frac{x^{${m}}\\cdot x^{${n}}}{x^{${k}}}`, expect: expr({ form: 'power', node: `x^(${r})` }), hint: 'Stessa base: nel prodotto gli esponenti si sommano, nel quoziente si sottraggono.', steps: [`x^{${m}+${n}-${k}}`, r === 0 ? '1' : r === 1 ? 'x' : `x^{${r}}`] }; }
+      const m = ri(2, 5), n = ri(2, 4), k = ri(2, 5); return { title: 'Semplifica (proprietà delle potenze)', start: `\\left(x^{${m}}\\right)^{${n}}\\cdot x^{${k}}`, expect: expr({ form: 'power', node: `x^(${m * n + k})` }), hint: 'Potenza di potenza: gli esponenti si moltiplicano.', steps: [`x^{${m * n}}\\cdot x^{${k}}`, `x^{${m * n + k}}`] };
+    }
+    if (level === 'medio') {
+      const t = ri(0, 2);
+      if (t === 0) { const c1 = ri(2, 5), c2 = ri(2, 5), a1 = ri(1, 4), a2 = ri(1, 4), b1 = ri(1, 3), b2 = ri(1, 4); const mon = (c, a, b) => `${c}a${a > 1 ? `^{${a}}` : ''}b${b > 1 ? `^{${b}}` : ''}`;
+        return { title: 'Moltiplica i monomi', start: `${mon(c1, a1, b1)}\\cdot ${mon(c2, a2, b2)}`, expect: expr({ form: 'monomial', node: `${c1 * c2}*a^${a1 + a2}*b^${b1 + b2}` }), hint: 'Moltiplica i coefficienti e somma gli esponenti delle stesse lettere.', steps: [`${c1}\\cdot ${c2}\\cdot a^{${a1}+${a2}}\\cdot b^{${b1}+${b2}}`, mon(c1 * c2, a1 + a2, b1 + b2)] }; }
+      if (t === 1) { const k = ri(2, 4), c = k * ri(2, 5), x1 = ri(3, 7), x2 = ri(1, x1 - 1), y1 = ri(2, 4), y2 = ri(1, y1 - 1); const xr = x1 - x2, yr = y1 - y2;
+        const res = `${c / k}x${xr > 1 ? `^{${xr}}` : ''}y${yr > 1 ? `^{${yr}}` : ''}`;
+        return { title: 'Dividi i monomi', start: `\\frac{${c}x^{${x1}}y^{${y1}}}{${k}x^{${x2}}${y2 > 1 ? `y^{${y2}}` : 'y'}}`, expect: expr({ form: 'monomial', node: `${c / k}*x^${xr}*y^${yr}` }), hint: 'Dividi i coefficienti e sottrai gli esponenti delle stesse lettere.', steps: [`${c / k}x^{${x1}-${x2}}y^{${y1}-${y2}}`, res] }; }
+      const c = ri(2, 3), m = ri(2, 4), n = ri(2, 3); return { title: 'Calcola la potenza del monomio', start: `\\left(${c}x^{${m}}\\right)^{${n}}`, expect: expr({ form: 'monomial', node: `${c ** n}*x^${m * n}` }), hint: 'Eleva il coefficiente e moltiplica gli esponenti.', steps: [`${c}^{${n}}\\cdot x^{${m}\\cdot ${n}}`, `${c ** n}x^{${m * n}}`] };
+    }
+    if (Math.random() < .5) { const a = ri(2, 4), b = ri(1, 3), n = 2, m = ri(1, 3), k = ri(b * n + 1, b * n + 3); const xr = a * n - m - 0, yr = k - b * n;
+      return { title: 'Semplifica (anche con esponenti negativi)', start: `\\left(\\frac{x^{${a}}}{y^{${b}}}\\right)^{${n}}\\cdot\\frac{y^{${k}}}{x^{${m}}}`, expect: expr({ form: 'monomial', node: `x^(${a * n - m})*y^(${yr})` }), hint: 'Prima la potenza della frazione, poi semplifica le stesse lettere.', steps: [`\\frac{x^{${a * n}}}{y^{${b * n}}}\\cdot\\frac{y^{${k}}}{x^{${m}}}`, `x^{${a * n - m}}y^{${yr}}`] }; }
+    const c = ri(2, 3), a = ri(1, 2), b = ri(1, 3);
+    return { title: 'Semplifica (esponenti negativi)', start: `\\left(${c}a^{-${a}}b${b > 1 ? `^{${b}}` : ""}\\right)^{-2}`, expect: expr({ form: 'monomial', node: `a^(${2 * a})/(${c * c}*b^(${2 * b}))` }), hint: 'Esponente negativo: passa alla reciproca. (k·aⁿ)⁻² = 1/(k²·a²ⁿ).', steps: [`${c}^{-2}a^{${2 * a}}b^{-${2 * b}}`, `\\frac{a^{${2 * a}}}{${c * c}b^{${2 * b}}}`] };
   },
-  scomposizione() {
-    let r1 = nz(-8, 8), r2 = nz(-8, 8); if (Math.random() < .25) r2 = -r1;
-    const cs = [r1 * r2, -(r1 + r2), 1];
-    return { title: 'Scomponi in fattori', start: polyTex(cs), expect: { kind: 'expr', form: 'factored', node: `(x-(${r1}))*(x-(${r2}))` }, hint: 'Cerca due numeri con somma uguale al coefficiente di x e prodotto uguale al termine noto.', steps: [`${linTex('x', r1)}${linTex('x', r2)}`] };
+  prodotti(level) {
+    if (level === 'facile') {
+      const t = ri(0, 2), b = nz(-7, 7);
+      if (t === 0) return { title: 'Sviluppa il quadrato del binomio', start: `\\left(x${sg(b)}\\right)^{2}`, expect: expr({ form: 'expanded', node: `(x+(${b}))^2` }), hint: 'Quadrato del primo + doppio prodotto + quadrato del secondo.', steps: [`x^{2}${sg(2 * b)}x+${b * b}`] };
+      if (t === 1) { const k = Math.abs(b); return { title: 'Sviluppa la somma per la differenza', start: `\\left(x+${k}\\right)\\left(x-${k}\\right)`, expect: expr({ form: 'expanded', node: `x^2-${k * k}` }), hint: 'Quadrato del primo meno quadrato del secondo.', steps: [`x^{2}-${k * k}`] }; }
+      const c = nz(-7, 7); return { title: 'Sviluppa il prodotto', start: `\\left(x${sg(b)}\\right)\\left(x${sg(c)}\\right)`, expect: expr({ form: 'expanded', node: `(x+(${b}))*(x+(${c}))` }), hint: 'Moltiplica ogni termine del primo per ogni termine del secondo.', steps: [`x^{2}${sg(c)}x${sg(b)}x${sg(b * c)}`, polyTex([b * c, b + c, 1])] };
+    }
+    if (level === 'medio') {
+      const t = ri(0, 2);
+      if (t === 0) { const a = ri(2, 4), b = nz(-5, 5); return { title: 'Sviluppa il quadrato del binomio', start: `\\left(${a}x${sg(b)}y\\right)^{2}`.replace(/([+-])1y/, '$1y'), expect: expr({ form: 'expanded', node: `(${a}x+(${b})*y)^2` }), hint: '(A + B)² = A² + 2AB + B², con A e B monomi.', steps: [`${a * a}x^{2}${sg(2 * a * b)}xy+${b * b}y^{2}`] }; }
+      if (t === 1) { const b = nz(-4, 4); return { title: 'Sviluppa il cubo del binomio', start: `\\left(x${sg(b)}\\right)^{3}`, expect: expr({ form: 'expanded', node: `(x+(${b}))^3` }), hint: '(A + B)³ = A³ + 3A²B + 3AB² + B³.', steps: [polyTex([b ** 3, 3 * b * b, 3 * b, 1])] }; }
+      const a = ri(1, 3), k = ri(1, 6); return { title: 'Sviluppa la somma per la differenza', start: `\\left(x^{2}+${k}\\right)\\left(x^{2}-${k}\\right)`, expect: expr({ form: 'expanded', node: `x^4-${k * k}` }), hint: 'Anche con x² funziona: quadrato del primo meno quadrato del secondo.', steps: [`x^{4}-${k * k}`] };
+    }
+    const t = ri(0, 1);
+    if (t === 0) { const a = ri(1, 6); return { title: 'Semplifica l\'espressione', start: `\\left(x+${a}\\right)^{2}-\\left(x-${a}\\right)^{2}`, expect: expr({ form: 'expanded', node: `${4 * a}*x` }), hint: 'Sviluppa i due quadrati e attento al segno meno davanti alla seconda parentesi.', steps: [`x^{2}+${2 * a}x+${a * a}-\\left(x^{2}-${2 * a}x+${a * a}\\right)`, `x^{2}+${2 * a}x+${a * a}-x^{2}+${2 * a}x-${a * a}`, `${4 * a}x`] }; }
+    const a = ri(2, 3), b = ri(1, 4);
+    const res = [b * b + b * b, -2 * a * b, 0]; // (ax-b)^2-(ax+b)(ax-b) = -2abx + 2b^2
+    return { title: 'Semplifica l\'espressione', start: `\\left(${a}x-${b}\\right)^{2}-\\left(${a}x+${b}\\right)\\left(${a}x-${b}\\right)`, expect: expr({ form: 'expanded', node: `(${a}x-${b})^2-(${a}x+${b})*(${a}x-${b})` }), hint: 'Sviluppa il quadrato e il prodotto somma per differenza, poi somma i termini simili.', steps: [`${a * a}x^{2}-${2 * a * b}x+${b * b}-\\left(${a * a}x^{2}-${b * b}\\right)`, polyTex([2 * b * b, -2 * a * b])] };
   },
-  equazioni1() {
-    let a, c, x, b, d; do { a = nz(-9, 9); c = nz(-9, 9); x = ri(-9, 9); b = ri(-15, 15); } while (a === c); d = a * x + b - c * x;
-    return { title: 'Risolvi l\'equazione', start: `${term(a, 1, true)}${sg(b)}=${term(c, 1, true)}${sg(d)}`.replace(/\+0|-0(?!\d)/g, ''), expect: { kind: 'sol', values: [x] }, hint: 'Porta le incognite a sinistra e i numeri a destra, poi dividi per il coefficiente di x.', steps: [`${term(a - c, 1, true)}=${d - b}`, `x=${x}`] };
+  scomposizione(level) {
+    if (level === 'facile') {
+      if (Math.random() < .5) { const k = ri(2, 6), a = ri(1, 5), b = nz(-7, 7); if (gcd(a, b) !== 1) return GEN.scomposizione(level); return { title: 'Scomponi raccogliendo a fattore comune', start: polyTex([0, k * b, k * a]), expect: expr({ form: 'factored', node: `${k}*x*(${a}x+(${b}))` }), hint: 'Raccogli il massimo comune divisore dei coefficienti e la x.', steps: [`${k}x\\left(${a === 1 ? '' : a}x${sg(b)}\\right)`] }; }
+      let r1 = nz(-8, 8), r2 = nz(-8, 8);
+      return { title: 'Scomponi il trinomio', start: polyTex([r1 * r2, -(r1 + r2), 1]), expect: expr({ form: 'factored', node: `(x-(${r1}))*(x-(${r2}))` }), hint: 'Due numeri con somma uguale al coefficiente di x e prodotto uguale al termine noto.', steps: [`${linTex('x', r1)}${linTex('x', r2)}`] };
+    }
+    if (level === 'medio') {
+      const t = ri(0, 2);
+      if (t === 0) { const a = ri(2, 5), b = ri(1, 9); if (gcd(a, b) !== 1) return GEN.scomposizione(level); return { title: 'Scomponi la differenza di quadrati', start: `${a * a}x^{2}-${b * b}`, expect: expr({ form: 'factored', node: `(${a}x-${b})*(${a}x+${b})` }), hint: 'A² − B² = (A − B)(A + B).', steps: [`\\left(${a}x-${b}\\right)\\left(${a}x+${b}\\right)`] }; }
+      if (t === 1) { const b = nz(-9, 9); return { title: 'Riconosci il quadrato di binomio', start: polyTex([b * b, 2 * b, 1]), expect: expr({ form: 'factored', node: `(x+(${b}))^2` }), hint: 'Il primo e l\'ultimo termine sono quadrati; il termine di mezzo è il doppio prodotto.', steps: [`\\left(x${sg(b)}\\right)^{2}`] }; }
+      const p = pick([2, 3]), r1 = nz(-5, 5), r2 = nz(-5, 5); const cs = [ -r1 * -r2 * 1, -(r1 * p) + -r2 * 1 * 0, 0 ];
+      // (p x - r1)(x - r2) = p x^2 - (p r2 + r1) x + r1 r2
+      const c2 = p, c1 = -(p * r2 + r1), c0 = r1 * r2;
+      return { title: 'Scomponi il trinomio (coefficiente di x² diverso da 1)', start: polyTex([c0, c1, c2]), expect: expr({ form: 'factored', node: `(${p}x-(${r1}))*(x-(${r2}))` }), hint: 'Cerca le radici con la formula del secondo grado: a(x − x₁)(x − x₂).', steps: [`\\left(${p}x${sg(-r1)}\\right)\\left(x${sg(-r2)}\\right)`] };
+    }
+    const t = ri(0, 1);
+    if (t === 0) { const k = ri(1, 3), r1 = nz(-5, 5), r2 = nz(-5, 5); const c = [0, k * r1 * r2, -k * (r1 + r2), k];
+      return { title: 'Scomponi completamente', start: polyTex(c), expect: expr({ form: 'factored', node: `${k}*x*(x-(${r1}))*(x-(${r2}))` }), hint: 'Prima raccogli a fattore comune, poi scomponi il trinomio che resta.', steps: [`${k === 1 ? '' : k}x\\left(${polyTex([r1 * r2, -(r1 + r2), 1])}\\right)`, `${k === 1 ? '' : k}x${linTex('x', r1)}${linTex('x', r2)}`] }; }
+    const a = ri(1, 3);
+    return { title: 'Scomponi completamente', start: `x^{4}-${a ** 4}`, expect: expr({ form: 'factored', node: `(x^2+${a * a})*(x-${a})*(x+${a})` }), hint: 'È una differenza di quadrati, e uno dei due fattori lo è ancora.', steps: [`\\left(x^{2}-${a * a}\\right)\\left(x^{2}+${a * a}\\right)`, `\\left(x-${a}\\right)\\left(x+${a}\\right)\\left(x^{2}+${a * a}\\right)`] };
   },
-  equazioni2() {
-    let r1 = ri(-9, 9), r2 = ri(-9, 9); if (r1 > r2) [r1, r2] = [r2, r1];
-    const s = r1 + r2, p = r1 * r2, D = s * s - 4 * p;
-    return { title: 'Risolvi l\'equazione di secondo grado', start: `${polyTex([p, -s, 1])}=0`, expect: { kind: 'sol', values: r1 === r2 ? [r1] : [r1, r2] }, hint: 'Usa la formula: x = (−b ± √Δ) / 2a, con Δ = b² − 4ac. Oppure scomponi.', steps: [p ? `\\Delta=${s * s}${sg(-4 * p)}=${D}` : `\\Delta=${D}`, `x=\\frac{${s}\\pm${Math.round(Math.sqrt(D))}}{2}`, r1 === r2 ? `x=${r1}` : `x=${r1}\\lor x=${r2}`] };
+  equazioni1(level) {
+    if (level === 'facile') {
+      const a = nz(-9, 9), x = ri(-9, 9), b = ri(-15, 15), c = a * x + b;
+      const L = Math.random() < .5 ? `${term(a, 1, true)}${b ? sg(b) : ''}` : `${b ? b : ''}${term(a, 1, !b)}`;
+      return { title: 'Risolvi l\'equazione', start: eqTex(L, `${c}`), expect: { kind: 'sol', values: [x] }, hint: 'Isola il termine con la x, poi dividi per il suo coefficiente.', steps: [`${term(a, 1, true)}=${c - b}`, `x=${x}`] };
+    }
+    if (level === 'medio') {
+      if (Math.random() < .4) { // con il meno davanti alla parentesi
+        let n, x, m, k, p; do { n = nz(-5, 5); x = ri(-8, 8); m = nz(-9, 9); k = ri(-12, 12); p = k - x - m - n * x; } while (n === -1);
+        return { title: 'Risolvi (attento al meno davanti alla parentesi)', start: eqTex(`${k ? k : ''}-\\left(x${sg(m)}\\right)`, `${term(n, 1, true)}${p ? sg(p) : ''}`), expect: { kind: 'sol', values: [x] }, hint: 'Il meno davanti alla parentesi cambia il segno di tutti i termini dentro.', steps: [`${k ? k : ''}-x${sg(-m)}=${term(n, 1, true)}${p ? sg(p) : ''}`, `${term(-1 - n, 1, true)}=${p - k + m}`, `x=${x}`] };
+      }
+      let a, b, c, d, e, x; do { a = nz(-5, 5); b = nz(-6, 6); c = nz(-5, 5); d = nz(-6, 6); x = ri(-8, 8); e = a * (x - b) - c * (x + d); } while (a === c);
+      // a(x - b) = c(x + d) + e
+      const L = a === 1 ? `x${sg(-b)}` : `${a === -1 ? '-' : a}\\left(x${sg(-b)}\\right)`, R = `${c === 1 ? '' : c === -1 ? '-' : c}\\left(x${sg(d)}\\right)${e ? sg(e) : ''}`;
+      return { title: 'Risolvi l\'equazione', start: eqTex(L, R), expect: { kind: 'sol', values: [x] }, hint: 'Togli le parentesi (proprietà distributiva), porta le x da una parte e i numeri dall\'altra.', steps: [`${term(a, 1, true)}${sg(-a * b)}=${term(c, 1, true)}${sg(c * d + e)}`, `${term(a - c, 1, true)}=${c * d + e + a * b}`, `x=${x}`] };
+    }
+    if (Math.random() < .5) { // con frazioni
+      const b = pick([2, 3, 4]), d = pick([3, 4, 5, 6].filter(v => v !== b)), a = nz(-5, 5), c = nz(-5, 5), e = nz(-3, 3);
+      // (x+a)/b - (x-c)/d = e  →  d(x+a) - b(x-c) = e·b·d  →  (d-b)x = ebd - da - bc
+      const m = b * d / gcd(b, d), num = e * m - (m / b) * a - (m / d) * c, den = m / b - m / d;
+      if (!den) return GEN.equazioni1(level);
+      const x = q(num, den);
+      return { title: 'Risolvi l\'equazione con le frazioni', start: `\\frac{x${sg(a)}}{${b}}-\\frac{x${sg(-c)}}{${d}}=${e}`, expect: { kind: 'sol', values: [x.v] }, hint: `Moltiplica tutto per il m.c.m. dei denominatori (${m}).`, steps: [`${m / b}\\left(x${sg(a)}\\right)-${m / d}\\left(x${sg(-c)}\\right)=${e * m}`, `${term(den, 1, true)}=${num}`, `x=${x.tex()}`] };
+    }
+    const a = nz(-5, 5), b = nz(-6, 6), c = ri(-20, 20); // (x+a)^2 - x(x+b) = c → (2a-b)x = c - a^2
+    if (2 * a - b === 0) return GEN.equazioni1(level);
+    const x = q(c - a * a, 2 * a - b);
+    return { title: 'Risolvi (attento: si semplifica)', start: eqTex(`\\left(x${sg(a)}\\right)^{2}-x\\left(x${sg(b)}\\right)`, `${c}`), expect: { kind: 'sol', values: [x.v] }, hint: 'Sviluppa il quadrato e il prodotto: le x² si cancellano e resta un\'equazione di primo grado.', steps: [`x^{2}${sg(2 * a)}x+${a * a}-x^{2}${sg(-b)}x=${c}`, `${term(2 * a - b, 1, true)}=${c - a * a}`, `x=${x.tex()}`] };
   },
-  logaritmi() {
-    const b = [2, 3, 5, 10][ri(0, 3)], k1 = ri(1, b === 10 ? 3 : 4), k2 = ri(1, b === 10 ? 2 : 3);
-    if (Math.random() < .5) return { title: 'Calcola', start: `\\log_{${b}}${b ** k1}`, expect: { kind: 'expr', form: 'number', value: k1 }, hint: `A quale esponente devi elevare ${b} per ottenere ${b ** k1}? Infatti ${b}^${k1} = ${b ** k1}.`, steps: [`\\log_{${b}}${b}^{${k1}}`, `${k1}`] };
-    return { title: 'Calcola usando le proprietà dei logaritmi', start: `\\log_{${b}}${b ** k1}+\\log_{${b}}${b ** k2}`, expect: { kind: 'expr', form: 'number', value: k1 + k2 }, hint: 'La somma di logaritmi con la stessa base è il logaritmo del prodotto.', steps: [`\\log_{${b}}\\left(${b ** k1}\\cdot${b ** k2}\\right)`, `\\log_{${b}}${b ** (k1 + k2)}`, `${k1 + k2}`] };
+  equazioni2(level) {
+    if (level === 'facile') {
+      if (Math.random() < .5) { const k = ri(1, 9), a = ri(1, 3); return { title: 'Risolvi l\'equazione pura', start: eqTex(`${a === 1 ? '' : a}x^{2}`, `${a * k * k}`), expect: { kind: 'sol', values: [-k, k] }, hint: 'Isola x² e poi fai la radice: le soluzioni sono due, opposte.', steps: [`x^{2}=${k * k}`, `x=-${k}\\lor x=${k}`] }; }
+      const a = ri(1, 4), b = nz(-9, 9); const r = q(-b, a);
+      return { title: 'Risolvi l\'equazione spuria', start: `${polyTex([0, b, a])}=0`, expect: { kind: 'sol', values: [0, r.v] }, hint: 'Raccogli la x: un prodotto è zero se uno dei fattori è zero.', steps: [`x\\left(${a === 1 ? '' : a}x${sg(b)}\\right)=0`, solTex([0, r].sort((u, v) => (u.v ?? u) - (v.v ?? v)))] };
+    }
+    if (level === 'medio') {
+      if (Math.random() < .3) { // (x + r)^2 = s^2
+        const r = nz(-6, 6), sq = ri(1, 7), vals = [q(-r - sq), q(-r + sq)];
+        return { title: 'Risolvi l\'equazione', start: eqTex(`\\left(x${sg(r)}\\right)^{2}`, `${sq * sq}`), expect: { kind: 'sol', values: vals.map(v => v.v) }, hint: 'Puoi sviluppare e usare la formula, oppure: la base al quadrato vale ' + sq * sq + ', quindi la base vale ±' + sq + '.', steps: [`${polyTex([r * r - sq * sq, 2 * r, 1])}=0`, solTex(vals)] };
+      }
+      const p = pick([1, 2, 3]), r1 = nz(-6, 6), r2 = ri(-6, 6); // (p x - r1)(x - r2) = 0
+      const c2 = p, c1 = -(p * r2 + r1), c0 = r1 * r2; const roots_ = [q(r1, p), q(r2)].sort((u, v) => u.v - v.v);
+      const D = c1 * c1 - 4 * c2 * c0;
+      const moved = Math.random() < .5 && c0 ? `${polyTex([0, c1, c2])}=${-c0}` : `${polyTex([c0, c1, c2])}=0`;
+      const vals = Math.abs(roots_[0].v - roots_[1].v) < 1e-12 ? [roots_[0]] : roots_;
+      return { title: 'Risolvi l\'equazione di secondo grado', start: moved, expect: { kind: 'sol', values: vals.map(v => v.v) }, hint: 'Porta tutto a sinistra (= 0), calcola Δ = b² − 4ac e usa la formula.', steps: [`${polyTex([c0, c1, c2])}=0`, `\\Delta=${D}`, solTex(vals)] };
+    }
+    if (Math.random() < .5) { // da sviluppare
+      const r1 = nz(-6, 6), r2 = nz(-6, 6), m = nz(-4, 4), n = nz(-4, 4);
+      // L = (x+m)(x+n); R = L - (x^2 - (r1+r2)x + r1 r2) = (m+n+r1+r2)x + (mn - r1 r2)
+      const s = r1 + r2, pr = r1 * r2, R1 = m + n + s, R0 = m * n - pr;
+      const vals = [...new Set([r1, r2])].sort((a, b) => a - b);
+      return { title: 'Risolvi (prima sviluppa e riordina)', start: eqTex(`\\left(x${sg(m)}\\right)\\left(x${sg(n)}\\right)`, polyTex([R0, R1])), expect: { kind: 'sol', values: vals }, hint: 'Sviluppa il prodotto, porta tutto a sinistra e riduci i termini simili.', steps: [`${polyTex([m * n, m + n, 1])}=${polyTex([R0, R1])}`, `${polyTex([pr, -s, 1])}=0`, solTex(vals)] };
+    }
+    const b = 2 * nz(-3, 3), c = -ri(1, 6); // x^2 + b x + c = 0 con Δ non quadrato
+    const D = b * b - 4 * c; if (Number.isInteger(Math.sqrt(D))) return GEN.equazioni2(level);
+    const sq = Math.sqrt(D), x1 = (-b - sq) / 2, x2 = (-b + sq) / 2;
+    return { title: 'Risolvi (le soluzioni hanno una radice)', start: `${polyTex([c, b, 1])}=0`, expect: { kind: 'sol', values: [x1, x2] }, hint: 'Δ non è un quadrato perfetto: lascia la radice e semplifica. Scrivi le due soluzioni separate da ∨.', steps: [`\\Delta=${D}`, `x=${numTex(x1)}\\lor x=${numTex(x2)}`] };
   },
-  derivate() {
-    const n = ri(2, 5), m = ri(1, n - 1), a = nz(-6, 6), b = nz(-9, 9), c = ri(-9, 9);
-    const cs = []; cs[n] = a; cs[m] = b; cs[0] = (cs[0] || 0) + c; for (let i = 0; i <= n; i++) cs[i] = cs[i] || 0;
-    const d = cs.map((v, i) => v * i).slice(1);
-    return { title: 'Calcola la derivata', start: polyTex(cs), expect: { kind: 'expr', form: 'expanded', node: d.map((v, i) => `(${v})*x^${i}`).join('+') }, derive: true, hint: 'Per ogni termine: l\'esponente scende a moltiplicare e diminuisce di 1. Le costanti spariscono.', steps: [polyTex(d)] };
+  logaritmi(level) {
+    const b = pick([2, 3, 5, 10]), kmax = b === 10 ? 3 : 4;
+    if (level === 'facile') {
+      const t = ri(0, 2), k = ri(1, kmax);
+      if (t === 0) return { title: 'Calcola', start: `\\log_{${b}}${b ** k}`, expect: expr({ form: 'number', value: k }), hint: `A quale esponente devi elevare ${b} per ottenere ${b ** k}?`, steps: [`\\log_{${b}}${b}^{${k}}`, `${k}`] };
+      if (t === 1) return { title: 'Calcola', start: `\\log_{${b}}\\frac{1}{${b ** k}}`, expect: expr({ form: 'number', value: -k }), hint: `1/${b ** k} = ${b}^(−${k}).`, steps: [`\\log_{${b}}${b}^{-${k}}`, `-${k}`] };
+      return { title: 'Calcola', start: `\\log_{${b}}1+\\log_{${b}}${b}`, expect: expr({ form: 'number', value: 1 }), hint: 'Il logaritmo di 1 è 0 in ogni base; il logaritmo della base è 1.', steps: [`0+1`, `1`] };
+    }
+    if (level === 'medio') {
+      const t = ri(0, 2), k1 = ri(1, kmax), k2 = ri(1, kmax - 1 || 1);
+      if (t === 0) return { title: 'Calcola usando le proprietà', start: `\\log_{${b}}${b ** k1}+\\log_{${b}}${b ** k2}`, expect: expr({ form: 'number', value: k1 + k2 }), hint: 'La somma di logaritmi (stessa base) è il logaritmo del prodotto.', steps: [`\\log_{${b}}\\left(${b ** k1}\\cdot ${b ** k2}\\right)`, `\\log_{${b}}${b ** (k1 + k2)}`, `${k1 + k2}`] };
+      if (t === 1) { const big = Math.max(k1, k2) + 1; return { title: 'Calcola usando le proprietà', start: `\\log_{${b}}${b ** big}-\\log_{${b}}${b ** k2}`, expect: expr({ form: 'number', value: big - k2 }), hint: 'La differenza di logaritmi è il logaritmo del quoziente.', steps: [`\\log_{${b}}\\frac{${b ** big}}{${b ** k2}}`, `\\log_{${b}}${b ** (big - k2)}`, `${big - k2}`] }; }
+      const c = ri(2, 3); return { title: 'Calcola usando le proprietà', start: `${c}\\log_{${b}}\\sqrt{${b}}`, expect: expr({ form: 'number', value: c / 2 }), hint: '√b = b^(1/2), e k·log(a) = log(aᵏ).', steps: [`${c}\\cdot\\frac{1}{2}`, fracTex(c, 2)] };
+    }
+    if (Math.random() < .5) { const a = ri(1, 3), c = ri(-5, 5), k = ri(1, b === 10 ? 2 : 3); const x = q(b ** k - c, a);
+      return { title: 'Risolvi l\'equazione logaritmica', start: `\\log_{${b}}\\left(${a === 1 ? '' : a}x${c ? sg(c) : ''}\\right)=${k}`, expect: { kind: 'sol', values: [x.v] }, hint: `Per definizione: l'argomento è uguale a ${b}^${k}. Controlla poi che sia positivo.`, steps: [`${a === 1 ? '' : a}x${c ? sg(c) : ''}=${b ** k}`, `x=${x.tex()}`] }; }
+    const k1 = ri(2, kmax), k2 = ri(1, 3);
+    return { title: 'Calcola usando le proprietà', start: `2\\log_{${b}}${b ** k1}-\\log_{${b}}${b ** k2}+\\log_{${b}}\\frac{1}{${b}}`, expect: expr({ form: 'number', value: 2 * k1 - k2 - 1 }), hint: 'Calcola ogni logaritmo come esponente, poi fai i conti.', steps: [`2\\cdot ${k1}-${k2}+\\left(-1\\right)`, `${2 * k1 - k2 - 1}`] };
+  },
+  derivate(level) {
+    const D = (fs, tex) => { const d = M().simplify(M().derivative(M().parse(fs), 'x')); const nt = nicePolyTex(d) || texOf(d); return { tex, fs, node: d.toString(), dtex: nt }; };
+    let f;
+    if (level === 'facile') {
+      const n = ri(2, 5), m = ri(1, n - 1), a = nz(-6, 6), b = nz(-9, 9), c = ri(-9, 9);
+      const cs = []; for (let i = 0; i <= n; i++) cs[i] = 0; cs[n] = a; cs[m] += b; cs[0] += c;
+      f = D(polyStr(cs), polyTex(cs));
+      return { title: 'Calcola la derivata', start: f.tex, expect: expr({ form: 'expanded', node: f.node }), derive: true, hint: 'Per ogni termine: l\'esponente scende a moltiplicare e diminuisce di 1; le costanti spariscono.', steps: [f.dtex] };
+    }
+    if (level === 'medio') {
+      const t = ri(0, 2), a = ri(1, 4), b = nz(-6, 6), n = ri(2, 4);
+      if (t === 0) f = D(`x^${n}*(${a}x+(${b}))`, `x^{${n}}\\left(${a === 1 ? '' : a}x${sg(b)}\\right)`);
+      else if (t === 1) f = D(`(${a}x+(${b}))^${n}`, `\\left(${a === 1 ? '' : a}x${sg(b)}\\right)^{${n}}`);
+      else f = D(`(${a}x+(${b}))/x`, `\\frac{${a === 1 ? '' : a}x${sg(b)}}{x}`);
+      const rule = ['Regola del prodotto: (f·g)\' = f\'·g + f·g\'.', 'Regola della catena: n·(…)ⁿ⁻¹ per la derivata dell\'interno.', 'Regola del quoziente, oppure dividi prima: a + b/x.'][t];
+      return { title: 'Calcola la derivata', start: f.tex, expect: expr({ form: 'any', node: f.node }), derive: true, hint: rule + ' Va bene qualsiasi forma equivalente.', steps: [f.dtex] };
+    }
+    const t = ri(0, 2), a = ri(1, 3), c = ri(1, 9);
+    if (t === 0) f = D(`x*e^(${a}x)`, `x\\,e^{${a === 1 ? '' : a}x}`);
+    else if (t === 1) f = D(`log(x^2+${c})`, `\\ln\\left(x^{2}+${c}\\right)`);
+    else f = D(`(x^2+${c})/(x-${a})`, `\\frac{x^{2}+${c}}{x-${a}}`);
+    const rule = ['Prodotto e catena: (eᵏˣ)\' = k·eᵏˣ.', '(ln g)\' = g\'/g.', 'Regola del quoziente: (f\'g − fg\')/g².'][t];
+    return { title: 'Calcola la derivata', start: f.tex, expect: expr({ form: 'any', node: f.node }), derive: true, hint: rule + ' Va bene qualsiasi forma equivalente.', steps: [f.dtex] };
   },
 };
 const TYPES = [
-  ['libero', 'Libero'], ['frazioni', 'Frazioni'], ['potenze', 'Potenze'], ['prodotti', 'Prodotti notevoli'], ['scomposizione', 'Scomposizione'],
+  ['libero', 'Libero'], ['espressioni', 'Espressioni'], ['frazioni', 'Frazioni'], ['potenze', 'Potenze e monomi'], ['prodotti', 'Prodotti notevoli'], ['scomposizione', 'Scomposizione'],
   ['equazioni1', 'Equazioni 1° grado'], ['equazioni2', 'Equazioni 2° grado'], ['logaritmi', 'Logaritmi'], ['derivate', 'Derivate'],
 ];
+const LEVELS = [['facile', 'Facile'], ['medio', 'Medio'], ['difficile', 'Difficile']];
 // La riga soddisfa la richiesta dell'esercizio?
 function checkFinal(ex, line) {
   const e = ex.expect;
   if (e.kind === 'sol') {
     if (line.kind !== 'sol') return false;
     const got = solSet(line), want = e.values.slice().sort((a, b) => a - b);
-    return sameSet(got, want) && line.sols.every(s => isSimpleNumber(s.node));
+    if (!sameSet(got, want)) return false;
+    return line.sols.every(s => { const v = Number(s.node.evaluate()); return toFrac(v, 1000) ? isSimpleNumber(s.node) : true; });
   }
   if (line.kind !== 'expr') return false;
   const target = e.node ? M().parse(e.node) : M().parse(String(e.value));
   if (!sameExpr(target, line.node)) return false;
   if (e.form === 'number') return isSimpleNumber(line.node);
   if (e.form === 'power') return isPowerForm(line.node) || isSimpleNumber(line.node);
+  if (e.form === 'monomial') return isMonomialForm(line.node);
   if (e.form === 'expanded') return isExpanded(line.node) && !/\(/.test(line.node.toString().replace(/\^\s*\(\s*-?\d+\s*\)/g, ''));
   if (e.form === 'factored') return isFactored(line.node);
   return true;
@@ -4678,7 +4935,7 @@ function checkFinal(ex, line) {
 // Per le derivate la riga 1 è f(x): i passaggi si confrontano con f'(x), non con f(x)
 function derivTarget(ex) { return { kind: 'expr', node: M().parse(ex.expect.node) }; }
 
-root.MLE = { toMathjs, parseLine, compare, command, GEN, TYPES, checkFinal, derivTarget, roots, isSimpleNumber, isExpanded, isFactored, numTex };
+root.MLE = { toMathjs, parseLine, compare, command, GEN, TYPES, LEVELS, checkFinal, derivTarget, roots, isSimpleNumber, isExpanded, isFactored, numTex };
 })(typeof window !== 'undefined' ? window : globalThis);
 
 </script>
@@ -6325,7 +6582,7 @@ const MLIBS = {
   mathlive: { cdn: 'https://cdn.jsdelivr.net/npm/mathlive@0.111.1/mathlive.min.js', local: 'mathlab/mathlive.min.js', sri: 'sha384-fnT74hn6eDg87dvsrlWHThK0ymBGqcjBpUEH0G2PGfpjT1Np0HMWfmheS3xKuzoX' },
   mathjs: { cdn: 'https://cdn.jsdelivr.net/npm/mathjs@13.2.0/lib/browser/math.js', local: 'mathlab/math.js', sri: 'sha384-d3+I7LvDambpjs3mxCGV0oIwCXzDxj2cyVHley/ulGoS2DijbpfjYixiUSl3nGuj' },
 };
-const ML = { loading: null, ready: false, ex: null, type: 'equazioni1', rows: [], sel: -1, helped: false, solShown: false, awarded: false };
+const ML = { loading: null, ready: false, ex: null, type: (() => { try { return localStorage.getItem('pitone.mtype') || 'equazioni1'; } catch (e) { return 'equazioni1'; } })(), level: (() => { try { return localStorage.getItem('pitone.mlevel') || 'facile'; } catch (e) { return 'facile'; } })(), rows: [], sel: -1, helped: false, solShown: false, awarded: false };
 function loadMathLibs() {
   if (ML.loading) return ML.loading;
   const add = lib => new Promise((res, rej) => {
@@ -6382,6 +6639,7 @@ function buildMathLab() {
   const wrap = $('#lab-math-wrap');
   wrap.innerHTML = `<div class="mlab">
     <div class="mlab-types" role="group" aria-label="Tipo di esercizio">${MLE.TYPES.map(([k, n], i) => `<button class="skill" data-mtype="${k}" style="--c:${SKILL_C[i % SKILL_C.length]}">${esc(n)}</button>`).join('')}</div>
+    <div class="mlab-levels" role="group" aria-label="Difficoltà"><span>Difficoltà</span>${MLE.LEVELS.map(([k, n], i) => `<button class="mlevel" data-mlevel="${k}" style="--c:${['#58CC02', '#FF9600', '#FF4B4B'][i]}">${'●'.repeat(i + 1)}<b>${esc(n)}</b></button>`).join('')}</div>
     <section class="mlab-task" aria-live="polite"></section>
     <div class="mlab-keys" aria-label="Simboli">
       <button data-ins="\\frac{#@}{#?}" title="Frazione">${katexHTML('\\frac{a}{b}')}</button>
@@ -6411,6 +6669,7 @@ function buildMathLab() {
     </details>
   </div>`;
   $$('[data-mtype]', wrap).forEach(b => b.onclick = () => newExercise(b.dataset.mtype));
+  $$('[data-mlevel]', wrap).forEach(b => b.onclick = () => { ML.level = b.dataset.mlevel; try { localStorage.setItem('pitone.mlevel', ML.level); } catch (e) { /* ignora */ } newExercise(ML.type); });
   $$('[data-ins]', wrap).forEach(b => b.onclick = () => {
     const mf = currentField(); if (!mf) return;
     mf.executeCommand(['insert', b.dataset.ins, { focus: true, format: 'latex' }]); mf.focus();
@@ -6424,9 +6683,14 @@ function currentField() {
   return last && last.mf;
 }
 function newExercise(type) {
+  if (type !== 'libero' && !MLE.GEN[type]) type = 'equazioni1';
+  if (!MLE.LEVELS.some(([k]) => k === ML.level)) ML.level = 'facile';
   ML.type = type; ML.helped = false; ML.solShown = false; ML.awarded = false; ML.gotXP = false;
+  try { localStorage.setItem('pitone.mtype', type); } catch (e) { /* ignora */ }
   $$('#lab-math-wrap [data-mtype]').forEach(b => b.setAttribute('aria-pressed', b.dataset.mtype === type));
-  ML.ex = type === 'libero' ? null : MLE.GEN[type]();
+  $$('#lab-math-wrap [data-mlevel]').forEach(b => b.setAttribute('aria-pressed', b.dataset.mlevel === ML.level));
+  const lv = $('#lab-math-wrap .mlab-levels'); if (lv) lv.hidden = type === 'libero';
+  ML.ex = type === 'libero' ? null : MLE.GEN[type](ML.level);
   ML.rows = [];
   if (ML.ex) ML.rows.push({ kind: 'given', latex: ML.ex.start });
   ML.rows.push({ kind: 'user', latex: '' });
@@ -6521,11 +6785,12 @@ function validate() {
     else { setRow(r, 'warn', c.msg, 'bulb'); prev = p; prevIdx = i; }
     if (ML.ex && c.ok === true && MLE.checkFinal(ML.ex, p)) {
       const helped = ML.helped || ML.solShown;
-      if (!ML.awarded) { ML.awarded = true; ML.gotXP = !helped; Sound.play('good'); if (!helped) grantXP(5); }
-      setRow(r, 'done', ML.gotXP ? 'Risultato corretto! +5 XP' : 'Risultato corretto (con aiuto: niente XP).', 'trophy');
+      if (!ML.awarded) { ML.awarded = true; ML.gotXP = !helped; Sound.play('good'); if (!helped) grantXP(mlabXP()); }
+      setRow(r, 'done', ML.gotXP ? `Risultato corretto! +${mlabXP()} XP` : 'Risultato corretto (con aiuto: niente XP).', 'trophy');
     }
   });
 }
+function mlabXP() { return { facile: 5, medio: 10, difficile: 15 }[ML.level] || 5; }
 function runCommand(cmd) {
   let idx = ML.sel; let r = ML.rows[idx];
   if (!r || !r.latex || !r.latex.trim()) { for (idx = ML.rows.length - 1; idx >= 0 && !(ML.rows[idx].latex || '').trim(); idx--); r = ML.rows[idx]; }

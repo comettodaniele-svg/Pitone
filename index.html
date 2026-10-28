@@ -775,6 +775,12 @@ details.acc summary .wk { background: var(--u); color: var(--uf); }
 .mlab-help ul { margin: 10px 0 2px; padding-left: 20px; display: grid; gap: 6px; font-size: 15px; }
 .mlab-help kbd { font-family: var(--font-mono); background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 0 6px; }
 @media (max-width: 520px) { .mrow { grid-template-columns: 34px minmax(0, 1fr) 26px 28px; } .mexpr, .mexpr math-field { font-size: 19px; } .mlab-q { font-size: 21px; } }
+
+/* casella della lavagna: niente icone interne, la tastiera si apre da sola sul telefono */
+.mexpr math-field::part(virtual-keyboard-toggle), .mexpr math-field::part(menu-toggle) { display: none; }
+.mexpr math-field::part(content) { padding: 2px 0; }
+.mexpr math-field { min-height: 48px; }
+@media (pointer: coarse) { .mlab-keys { display: none; } }
 </style>
 
 <div class="shell" id="shell">
@@ -6331,9 +6337,33 @@ function loadMathLibs() {
     const MFE = window.MathfieldElement;
     MFE.fontsDirectory = null; MFE.soundsDirectory = null; MFE.decimalSeparator = ',';
     try { MFE.locale = 'it'; } catch (e) { /* ignora */ }
+    setupKeyboard();
     ML.ready = true; return true;
   }).catch(() => false);
   return ML.loading;
+}
+// Tastiera matematica su misura per gli esercizi (al posto di quella generica)
+function setupKeyboard() {
+  const kb = window.mathVirtualKeyboard; if (!kb) return;
+  const k = (latex, label, extra) => Object.assign({ latex }, label ? { label } : {}, extra || {});
+  try {
+    kb.layouts = [{
+      label: '123', tooltip: 'Numeri e simboli',
+      rows: [
+        ['x', 'y', '7', '8', '9', k('\\frac{#@}{#?}'), k('#@^{#?}'), '[backspace]'],
+        ['a', 'b', '4', '5', '6', k('\\cdot', '×'), k('\\sqrt{#0}'), k('\\log_{#0}#?', 'log<sub>b</sub>', { tooltip: 'logaritmo in base b' })],
+        ['(', ')', '1', '2', '3', '-', '=', k('\\lor ', '∨', { tooltip: 'oppure (tra due soluzioni)' })],
+        ['[left]', '[right]', '0', k('{,}', ','), '+', k('\\pi'), k('\\ln '), '[return]'],
+      ],
+    }, 'alphabetic'];
+  } catch (e) { /* tastiera standard */ }
+  // Quando la tastiera è aperta, lascia spazio sotto la pagina e porta in vista la riga che stai scrivendo
+  kb.addEventListener('geometrychange', () => {
+    const h = kb.visible ? Math.round(kb.boundingRect.height) : 0;
+    document.body.style.paddingBottom = h ? h + 'px' : '';
+    const f = document.activeElement && document.activeElement.tagName === 'MATH-FIELD' ? document.activeElement : null;
+    if (h && f) setTimeout(() => f.scrollIntoView({ block: 'center', behavior: 'smooth' }), 60);
+  });
 }
 const katexHTML = tex => { try { return window.katex.renderToString(tex, { throwOnError: false, displayMode: false }); } catch (e) { return esc(tex); } };
 const toAscii = latex => { try { return window.MathLive.convertLatexToAsciiMath(latex); } catch (e) { return ''; } };
@@ -6422,7 +6452,7 @@ function drawTask() {
 function makeField(row, i) {
   const mf = document.createElement('math-field');
   mf.setAttribute('math-virtual-keyboard-policy', 'auto');
-  mf.setAttribute('placeholder', i === 0 && !ML.ex ? '\\text{scrivi qui}' : '\\text{prossimo passaggio}');
+  mf.setAttribute('placeholder', i === 0 && !ML.ex ? '\\text{scrivi qui}' : '\\text{passaggio}');
   mf.value = row.latex || '';
   let t = null;
   mf.addEventListener('input', () => { row.latex = mf.value; clearTimeout(t); t = setTimeout(validate, 450); });

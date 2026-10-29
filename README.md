@@ -5,7 +5,7 @@ Progetto personale non ufficiale per imparare Python seguendo il programma di
 Non è affiliato a CS50 né a Harvard University.
 
 - App web: `index.html` (pubblicata con GitHub Pages)
-- App Android: `Pitone.apk` (versione 3.0)
+- App Android: `Pitone.apk` (versione 3.0.1)
 
 ## Licenze
 - I video mostrati nell'app sono di CS50 (Harvard University) e sono distribuiti con licenza

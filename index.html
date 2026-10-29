@@ -114,8 +114,35 @@ svg.ic { width: 1em; height: 1em; flex: none; display: block; }
 }
 .topbar-in { max-width: 640px; margin: 0 auto; height: 60px; display: flex; align-items: center; gap: 12px; }
 .brand { display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-weight: 800; font-size: 22px; letter-spacing: -.01em; margin-right: auto; color: var(--ink); text-decoration: none; }
-.brand svg { width: 32px; height: 32px; }
+.brand svg { width: 36px; height: 36px; margin: -4px 0; }
 .stats { display: flex; gap: 6px; }
+.course-chip { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 12px 0 8px; border-radius: 12px; border: 0; background: var(--s1); color: #fff; font-family: var(--font-display); font-weight: 900; font-size: 15px; box-shadow: 0 3px 0 var(--s3); cursor: pointer; }
+.course-chip .ic { width: 22px; height: 22px; }
+.course-chip:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--s3); }
+@media (max-width: 480px) { .course-chip { padding: 0 8px; } .course-chip span { display: none; } .brand { font-size: 20px; } .stat { padding: 6px 6px; } }
+.course-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 16px; border-radius: 20px; background: var(--s1); color: #fff; box-shadow: 0 5px 0 var(--s3); margin-bottom: 20px; }
+.ch-ic { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; background: rgba(255,255,255,.22); }
+.ch-ic .ic { width: 34px; height: 34px; }
+.ch-txt p { margin: 0; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: .06em; opacity: .85; }
+.ch-txt h2 { margin: 0; font-size: 26px; line-height: 1.1; color: #fff; }
+.ch-txt small { display: block; font-weight: 700; opacity: .9; margin-top: 2px; }
+.ch-bar { display: block; height: 10px; border-radius: 99px; background: rgba(0,0,0,.18); margin-top: 8px; overflow: hidden; }
+.ch-bar i { display: block; height: 100%; border-radius: inherit; background: #fff; min-width: 10px; }
+.ch-change { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; border: 2px solid rgba(255,255,255,.55); background: rgba(255,255,255,.14); color: #fff; border-radius: 14px; padding: 8px 10px; font: inherit; font-weight: 900; font-size: 12.5px; cursor: pointer; }
+.ch-change .ic { width: 22px; height: 22px; }
+.ch-change:hover { background: rgba(255,255,255,.26); }
+.course-list { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+.course-card { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; text-align: left; padding: 14px; border-radius: 18px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); box-shadow: 0 4px 0 var(--line); font: inherit; cursor: pointer; }
+.course-card.on { border-color: var(--s1); box-shadow: 0 4px 0 var(--s3); }
+.course-card:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+.cc-ic { width: 52px; height: 52px; border-radius: 15px; display: grid; place-items: center; background: var(--s1); color: #fff; box-shadow: 0 3px 0 var(--s3); }
+.cc-ic .ic { width: 30px; height: 30px; }
+.cc-txt b { display: block; font-family: var(--font-display); font-size: 19px; font-weight: 900; }
+.cc-txt small { display: block; color: var(--muted); font-weight: 700; font-size: 13px; }
+.cc-txt .ch-bar { background: var(--line); margin: 6px 0 4px; }
+.cc-txt .ch-bar i { background: var(--s1); }
+.cc-on { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--s1); color: #fff; }
+.cc-on .ic { width: 18px; height: 18px; }
 .stat { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-display); font-weight: 800; font-size: 17px; padding: 6px 10px; border-radius: 999px; background: transparent; border: 0; font-variant-numeric: tabular-nums; }
 .stat:hover { background: var(--surface-2); }
 .stat .ic { width: 22px; height: 22px; }
@@ -767,6 +794,12 @@ details.acc summary .wk { background: var(--u); color: var(--uf); }
 .mmsg:empty { display: none; }
 .mstat { margin-top: 10px; width: 26px; height: 26px; }
 .mstat .ic { width: 26px; height: 26px; }
+.mrow.user .mexpr { flex-wrap: nowrap; }
+.mrow.user .mexpr math-field { width: auto; }
+.mok { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); color: var(--muted); box-shadow: 0 2px 0 var(--line); cursor: pointer; }
+.mok .ic { width: 22px; height: 22px; }
+.mrow.sel .mok, .mrow.pending .mok { background: var(--good); border-color: var(--good); color: #fff; box-shadow: 0 3px 0 var(--good-deep); }
+.mok:active { transform: translateY(2px); box-shadow: none; }
 .mrow.ok .mstat { color: var(--good); } .mrow.ok .mmsg { color: var(--good-ink); }
 .mrow.ko .mstat { color: var(--bad); } .mrow.ko .mmsg { color: var(--bad-ink); } .mrow.ko math-field { border-color: var(--bad); }
 .mrow.warn .mstat { color: var(--sun-deep); } .mrow.warn .mmsg { color: var(--ink); }
@@ -796,6 +829,7 @@ details.acc summary .wk { background: var(--u); color: var(--uf); }
   <header class="topbar">
     <div class="topbar-in">
       <a class="brand" href="#percorso" aria-label="Pitone, vai al percorso"><span id="brand-mark"></span>Pitone</a>
+      <button class="course-chip" id="st-course" title="Cambia corso" aria-label="Corso attuale, tocca per cambiare"></button>
       <div class="stats">
         <button class="stat streak" id="st-streak" title="Giorni di fila"></button>
         <button class="stat xp" id="st-xp" title="Punti esperienza"></button>
@@ -4963,6 +4997,7 @@ const P = {
   code: '<path d="m8.5 7-5 5 5 5M15.5 7l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>',
   bulb: '<path d="M9 17.5h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3Z" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>',
   refresh: '<path d="M20 11a8 8 0 0 0-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9L20 16m0 4v-4h-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>',
+  swap: '<path d="M7 4 3.5 7.5 7 11M3.5 7.5H17M17 13l3.5 3.5L17 20M20.5 16.5H7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>',
   chev: '<path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>',
   clock: '<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M12 7v5l3.5 2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>',
   target: '<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/>',
@@ -4975,18 +5010,30 @@ const P = {
 };
 const icon = (n, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true">${P[n]}</svg>`;
 
-// Mascotte originale: un serpentello arrotolato
-const snakeMark = (big = false) => `
-<svg viewBox="0 0 64 64" ${big ? 'class="mascot"' : ''} aria-hidden="true">
-  <path d="M14 50c-6 0-8-6-4-9s14-2 22-2 20-1 20-9-10-9-18-9-14-2-14-7 6-8 14-8" fill="none" stroke="#58CC02" stroke-width="9" stroke-linecap="round"/>
-  <path d="M14 50c-6 0-8-6-4-9s14-2 22-2 20-1 20-9-10-9-18-9-14-2-14-7 6-8 14-8" fill="none" stroke="#FFB300" stroke-width="2.6" stroke-linecap="round" stroke-dasharray=".1 10.5"/>
-  <path d="M14 50c-6 0-8-6-4-9s14-2 22-2 20-1 20-9-10-9-18-9-14-2-14-7 6-8 14-8" fill="none" stroke="#1CB0F6" stroke-width="2.6" stroke-linecap="round" stroke-dasharray=".1 10.5" stroke-dashoffset="3.5"/>
-  <path d="M14 50c-6 0-8-6-4-9s14-2 22-2 20-1 20-9-10-9-18-9-14-2-14-7 6-8 14-8" fill="none" stroke="#FF4B4B" stroke-width="2.6" stroke-linecap="round" stroke-dasharray=".1 10.5" stroke-dashoffset="7"/>
-  <ellipse cx="38" cy="6.5" rx="8" ry="6.5" fill="#58CC02"/>
-  <circle cx="40.5" cy="5" r="2.2" fill="#fff"/><circle cx="41" cy="5" r="1.1" fill="#1C1733"/>
-  <path d="M46 7.5h4l2-2m-2 2 2 2" fill="none" stroke="var(--heart)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-  ${big ? '<path d="M24 1.5 31 .5l-2 5.5Z" fill="var(--sun)"/>' : ''}
-</svg>`;
+// Mascotte originale (mascot.js)
+// Mascotte di Pitone: un pitone verde con il muso tondo (viewBox 0 0 100 100). Usata dall'app e dalle icone.
+const SNAKE_BODY = 'M22 84C36 93 74 93 79 78C84 63 62 60 46 58C30 56 24 47 32 40C37 35.5 43 35 49 37';
+const SNAKE_TAIL = 'M26.8 77.6L25.0 76.7L23.1 75.8L21.3 75.0L19.6 74.2L18.0 73.4L16.5 72.6L15.2 71.7L14.1 70.8L13.0 69.7L12.2 68.3L11.7 66.5L11.5 64.4Q10.9 62.9 9.5 63.6L9.5 63.6L8.1 65.8L7.1 68.3L6.6 70.9L6.7 73.6L7.3 76.3L8.2 78.8L9.5 81.3L11.0 83.6L12.6 85.7L14.4 87.7L16.3 89.5L18.2 91.0Z';
+const snakeInner = (c = { b: '#58CC02', sh: '#46A302', spot: '#3E9A00' }) => `
+  <path d="${SNAKE_TAIL}" transform="translate(0 4)" fill="${c.sh}"/>
+  <path d="${SNAKE_BODY}" transform="translate(0 4)" fill="none" stroke="${c.sh}" stroke-width="16" stroke-linecap="round"/>
+  <path d="${SNAKE_TAIL}" fill="${c.b}"/>
+  <path d="${SNAKE_BODY}" fill="none" stroke="${c.b}" stroke-width="16" stroke-linecap="round"/>
+  <path d="${SNAKE_BODY}" fill="none" stroke="${c.spot}" stroke-width="5.5" stroke-linecap="round" stroke-dasharray="0 11" stroke-dashoffset="-5"/>
+  <g transform="rotate(-6 56 27)">
+    <ellipse cx="56" cy="31" rx="20" ry="16.5" fill="${c.sh}"/>
+    <ellipse cx="56" cy="27.5" rx="20" ry="16.5" fill="${c.b}"/>
+    <ellipse cx="49" cy="18" rx="7" ry="3" fill="#fff" opacity=".25"/>
+    <circle cx="47.5" cy="25" r="6.3" fill="#fff"/><circle cx="64.5" cy="25" r="6.3" fill="#fff"/>
+    <circle cx="48.8" cy="26" r="3.6" fill="#1C1733"/><circle cx="65.8" cy="26" r="3.6" fill="#1C1733"/>
+    <circle cx="50" cy="24.6" r="1.3" fill="#fff"/><circle cx="67" cy="24.6" r="1.3" fill="#fff"/>
+    <ellipse cx="41" cy="33" rx="3.2" ry="2" fill="#FF86D0" opacity=".8"/><ellipse cx="71" cy="33" rx="3.2" ry="2" fill="#FF86D0" opacity=".8"/>
+    <path d="M51.5 34q4.5 3.4 9 0" fill="none" stroke="#1C1733" stroke-width="2.1" stroke-linecap="round"/>
+    <path d="M56 36.8v6.2m0 0-2.5 2.5m2.5-2.5 2.5 2.5" fill="none" stroke="#FF4B4B" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>`;
+if (typeof module !== 'undefined') module.exports = { snakeInner };
+
+const snakeMark = (big = false) => `<svg viewBox="0 0 100 100" ${big ? 'class="mascot"' : ''} aria-hidden="true">${snakeInner()}</svg>`;
 
 // ───────────────────────── Utilità ─────────────────────────
 const $ = (s, el = document) => el.querySelector(s);
@@ -5573,8 +5620,15 @@ function renderStats() {
   const hEl = $('#st-hearts');
   hEl.innerHTML = `${icon('heart')}<span>${S.hearts}</span>`;
   hEl.title = S.hearts >= MAXH ? 'Cuori al massimo' : `Prossimo cuore tra ${Math.ceil(nextHeartIn() / 60000)} min`;
+  const C = curCourse(), cEl = $('#st-course');
+  cEl.innerHTML = `${icon(C.icon)}<span>${C.name}</span>`;
+  cEl.style.cssText = `--s1:${C.grad[0]};--s3:${C.grad[2]}`;
+  document.documentElement.dataset.course = C.key;
+  const lt = $('[data-tab="laboratorio"]');
+  if (lt) { lt.lastChild.textContent = C.key === 'math' ? 'Lavagna' : 'Laboratorio'; $('.tab-pill', lt).innerHTML = icon(C.key === 'math' ? 'sigma' : 'terminal'); }
 }
 $('#st-streak').onclick = () => go('profilo');
+$('#st-course').onclick = () => courseSheet();
 $('#st-xp').onclick = () => go('profilo');
 $('#st-hearts').onclick = () => heartsSheet();
 
@@ -5583,14 +5637,33 @@ const isDone = id => !!S.done[id];
 const isUnlocked = i => S.unlockAll || !NODES[i].prev || isDone(NODES[i].prev);
 function currentIndex(course = S.subject) { return NODES.findIndex((n, k) => n.course === course && !isDone(n.id) && isUnlocked(k)); }
 const curCourse = () => COURSES[S.subject] || COURSES.py;
-function subjectSwitch() {
-  return `<div class="subject-switch" role="group" aria-label="Materia">${Object.values(COURSES).map(c => {
-    const done = NODES.filter(n => n.course === c.key && isDone(n.id)).length, tot = NODES.filter(n => n.course === c.key).length;
-    return `<button data-subject="${c.key}" aria-pressed="${S.subject === c.key}" style="--s1:${c.grad[0]};--s2:${c.grad[1]};--s3:${c.grad[2]}">${icon(c.icon)}<span>${c.name}<br><small>${done}/${tot} tappe</small></span></button>`;
-  }).join('')}</div>`;
+const courseStats = c => { const done = NODES.filter(n => n.course === c.key && isDone(n.id)).length, tot = NODES.filter(n => n.course === c.key).length; return { done, tot, pct: Math.round(done / tot * 100) }; };
+function courseHeader() {
+  const C = curCourse(), st = courseStats(C);
+  return `<section class="course-head" style="--s1:${C.grad[0]};--s3:${C.grad[2]}">
+    <div class="ch-ic">${icon(C.icon)}</div>
+    <div class="ch-txt"><p>Stai studiando</p><h2>${C.name}</h2><small>${esc(C.sub)} · ${st.done}/${st.tot} tappe</small>
+      <div class="ch-bar" role="progressbar" aria-valuenow="${st.pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Avanzamento del corso"><i style="width:${st.pct}%"></i></div></div>
+    <button class="ch-change" data-course-pick>${icon('swap')}<span>Cambia</span></button>
+  </section>`;
 }
-function wireSubject(root, rerender) {
-  $$('[data-subject]', root).forEach(b => b.onclick = () => { if (S.subject === b.dataset.subject) return; S.subject = b.dataset.subject; save(); rerender(); window.scrollTo(0, 0); Sound.play('tap'); });
+function courseSheet() {
+  sheet(`<h3>Cosa vuoi studiare?</h3><p class="sub">Ogni corso ha il suo percorso, il suo ripasso e il suo laboratorio. Serie, XP e cuori sono in comune.</p>
+    <div class="course-list">${Object.values(COURSES).map(c => { const st = courseStats(c), on = S.subject === c.key;
+      return `<button class="course-card${on ? ' on' : ''}" data-pick="${c.key}" style="--s1:${c.grad[0]};--s3:${c.grad[2]}">
+        <span class="cc-ic">${icon(c.icon)}</span>
+        <span class="cc-txt"><b>${c.name}</b><small>${esc(c.sub)} · ${c.key === 'py' ? 'editor e terminale' : 'lavagna per i passaggi'}</small><span class="ch-bar"><i style="width:${st.pct}%"></i></span><small>${st.done}/${st.tot} tappe</small></span>
+        ${on ? `<span class="cc-on">${icon('check')}</span>` : ''}</button>`; }).join('')}</div>`, sc => {
+    $$('[data-pick]', sc).forEach(b => b.onclick = () => { closeSheet(); setCourse(b.dataset.pick); });
+  });
+}
+function setCourse(key) {
+  if (!COURSES[key]) return;
+  const changed = S.subject !== key;
+  S.subject = key; save();
+  renderAll();
+  if (currentTab === 'laboratorio') renderLab();
+  if (changed) { window.scrollTo(0, 0); Sound.play('tap'); }
 }
 const OFFS = [0, 56, 84, 56, 0, -56, -84, -56];
 // Un colore pieno per ogni unità: [colore, colore secondario, ombra, testo]
@@ -5617,7 +5690,7 @@ function renderPath() {
   const cur = currentIndex();
   const tx = todayXP();
   const C = curCourse();
-  let html = (Update.info ? `<a class="update-card" href="${esc(Update.url())}" target="_blank" rel="noopener">${icon('refresh')}<span><b>Nuova versione ${esc(Update.info.version)} disponibile</b><small>Tocca per scaricare l'APK e installalo sopra quella attuale: i progressi restano.</small></span></a>` : '') + subjectSwitch() + `<div class="goal-card">${goalRing(tx, S.goal)}<div class="goal-txt">
+  let html = (Update.info ? `<a class="update-card" href="${esc(Update.url())}" target="_blank" rel="noopener">${icon('refresh')}<span><b>Nuova versione ${esc(Update.info.version)} disponibile</b><small>Tocca per scaricare l'APK e installalo sopra quella attuale: i progressi restano.</small></span></a>` : '') + courseHeader() + `<div class="goal-card">${goalRing(tx, S.goal)}<div class="goal-txt">
       <strong>${tx >= S.goal ? 'Obiettivo di oggi raggiunto' : 'Obiettivo di oggi'}</strong>
       <span>${tx} / ${S.goal} XP${tx >= S.goal ? ' · la serie è al sicuro' : ''}</span></div></div>`;
   C.units.forEach((u, ui) => {
@@ -5654,7 +5727,7 @@ function renderPath() {
     : [`Hai completato tutte le 10 settimane. Il prossimo passo di CS50P è il progetto finale: un programma tutto tuo.`, `10 unità, una per ogni settimana di CS50P.`];
   html += `<p class="course-end">${cur === -1 ? ends[0] : ends[1]}</p>`;
   $('#view-path').innerHTML = html;
-  wireSubject($('#view-path'), renderPath);
+  $$('#view-path [data-course-pick]').forEach(b => b.onclick = courseSheet);
   $$('#view-path [data-node]').forEach(b => b.onclick = () => nodeSheet(b.dataset.node));
   $$('#view-path [data-theory]').forEach(b => b.onclick = () => theorySheet(b.dataset.theory));
 }
@@ -6330,7 +6403,7 @@ function renderReview() {
   const pool = practicePool();
   const C = curCourse();
   const wk = mathWeekReached();
-  let html = `<div class="v-head"><h1>Ripasso</h1><p>Rinfresca quello che hai imparato e recupera cuori.</p></div>${subjectSwitch()}
+  let html = `<div class="v-head"><h1>Ripasso · ${C.name}</h1><p>Rinfresca quello che hai imparato e recupera cuori.</p></div>
     <div class="panel practice"><div class="big-ic heart">${icon('heart')}</div><div class="txt"><h3>Allenamento rapido</h3>
       <p>${pool.length ? `8 esercizi presi dalle lezioni completate. Niente cuori in gioco: +5 XP e un cuore in regalo.` : 'Completa la tua prima lezione per sbloccare l\'allenamento.'}</p></div>
       <button class="btn" data-practice ${pool.length ? '' : 'disabled'}>Allenati</button></div>
@@ -6345,7 +6418,6 @@ function renderReview() {
   html += `</div>`;
   $('#view-review').innerHTML = html;
   wireVideos($('#view-review'));
-  wireSubject($('#view-review'), renderReview);
   $$('#view-review details').forEach(d => d.addEventListener('toggle', () => { if (d.open && !d.dataset.m) { d.dataset.m = 1; renderMath(d); } }));
   $$('#view-review [data-skill]').forEach(b => b.onclick = () => startSkill(b.dataset.skill));
   $('#view-review [data-practice]').onclick = startPractice;
@@ -6489,24 +6561,18 @@ async function termEnter(raw) {
   else termPush(`<span class="t-err">${tEsc(cmd.split(/\s+/)[0])}: comando non trovato</span> <span class="t-mute">(scrivi help)</span>\n`);
   termRender();
 }
-const LABMODE_KEY = 'pitone.labmode';
-function labMode() { try { return localStorage.getItem(LABMODE_KEY) || (S.subject === 'math' ? 'math' : 'py'); } catch (e) { return S.subject === 'math' ? 'math' : 'py'; } }
+function labMode() { return S.subject === 'math' ? 'math' : 'py'; } // il laboratorio segue il corso scelto
 function renderLab() {
   const v = $('#view-lab');
   if (!v.dataset.shell) {
     v.dataset.shell = '1';
-    v.innerHTML = `<div class="v-head"><h1>Laboratorio</h1><p id="lab-sub"></p></div>
-      <div class="subject-switch lab-switch" role="group" aria-label="Strumento">
-        <button data-labmode="py" style="--s1:#58CC02;--s2:#58CC02;--s3:#58A700">${icon('py')}<span>Python<br><small>editor e terminale</small></span></button>
-        <button data-labmode="math" style="--s1:#1CB0F6;--s2:#1CB0F6;--s3:#1899D6">${icon('sigma')}<span>Matematica<br><small>lavagna</small></span></button>
-      </div>
+    v.innerHTML = `<div class="v-head"><h1 id="lab-title"></h1><p id="lab-sub"></p></div>
       <div id="lab-py-wrap"></div><div id="lab-math-wrap"></div>`;
-    $$('[data-labmode]', v).forEach(b => b.onclick = () => { try { localStorage.setItem(LABMODE_KEY, b.dataset.labmode); } catch (e) { /* ignora */ } renderLab(); });
   }
   const mode = labMode();
-  $$('[data-labmode]', v).forEach(b => b.setAttribute('aria-pressed', b.dataset.labmode === mode));
+  $('#lab-title').textContent = mode === 'py' ? 'Laboratorio Python' : 'Lavagna di matematica';
   $('#lab-py-wrap').hidden = mode !== 'py'; $('#lab-math-wrap').hidden = mode !== 'math';
-  $('#lab-sub').textContent = mode === 'py' ? 'Scrivi il programma in main.py, premi Esegui e rispondi agli input() direttamente nel terminale.' : 'Scrivi i passaggi come sul quaderno: controllo ogni riga e ti dico quando il risultato è giusto.';
+  $('#lab-sub').textContent = mode === 'py' ? 'Scrivi il programma in main.py, premi Esegui e rispondi agli input() direttamente nel terminale.' : 'Scrivi i passaggi come sul quaderno: quando confermi una riga (Invio o ✓) controllo se è giusta.';
   if (mode === 'math') { renderMathLab(); return; }
   renderPyLab();
 }
@@ -6664,7 +6730,7 @@ function buildMathLab() {
         <li><b>Logaritmo</b>: tasto ${katexHTML('\\log_{b}')}: prima la base, poi l'argomento. <kbd>ln</kbd> è il logaritmo naturale.</li>
         <li><b>Moltiplicazione</b>: basta scrivere <kbd>2x</kbd>; per i numeri usa <kbd>*</kbd>, che diventa ${katexHTML('\\cdot')}.</li>
         <li><b>Due soluzioni</b>: ${katexHTML('x=2\\lor x=3')} con il tasto "oppure".</li>
-        <li>Premi <kbd>Invio</kbd> per confermare una riga e passare alla successiva. Sul telefono c'è la tastiera matematica.</li>
+        <li>Mentre scrivi non controllo niente: quando la riga è pronta premi <kbd>Invio</kbd> o il tasto verde ✓. Solo allora ti dico se il passaggio è giusto, e si apre la riga successiva. Sul telefono c'è la tastiera matematica.</li>
       </ul>
     </details>
   </div>`;
@@ -6718,9 +6784,11 @@ function makeField(row, i) {
   mf.setAttribute('math-virtual-keyboard-policy', 'auto');
   mf.setAttribute('placeholder', i === 0 && !ML.ex ? '\\text{scrivi qui}' : '\\text{passaggio}');
   mf.value = row.latex || '';
-  let t = null;
-  mf.addEventListener('input', () => { row.latex = mf.value; clearTimeout(t); t = setTimeout(validate, 450); });
-  mf.addEventListener('change', () => { row.latex = mf.value; commitRow(i); });
+  // nessun controllo mentre scrivi: la riga si controlla con Invio (o il tasto ✓)
+  let enter = false;
+  mf.addEventListener('beforeinput', e => { if (e.inputType === 'insertLineBreak') enter = true; });
+  mf.addEventListener('input', () => { row.latex = mf.value; if (row.checked !== undefined && row.checked !== row.latex) setRow(row, 'pending', ''); });
+  mf.addEventListener('change', () => { row.latex = mf.value; if (!enter) return; enter = false; commitRow(i); });
   mf.addEventListener('focus', () => selectRow(i));
   row.mf = mf;
   return mf;
@@ -6733,7 +6801,7 @@ function drawSheet() {
     el.className = `mrow ${r.kind}${i === ML.sel ? ' sel' : ''}`;
     el.innerHTML = `<button class="mnum" title="Seleziona la riga">#${i + 1}</button><div class="mbody"><div class="mexpr"></div><p class="mmsg"></p></div><span class="mstat" aria-hidden="true"></span>${r.kind === 'user' || r.kind === 'tool' || r.kind === 'sol' ? `<button class="mdel" title="Cancella la riga" aria-label="Cancella la riga ${i + 1}">${icon('x')}</button>` : '<span></span>'}`;
     const box = $('.mexpr', el);
-    if (r.kind === 'user') box.appendChild(makeField(r, i));
+    if (r.kind === 'user') { box.appendChild(makeField(r, i)); box.insertAdjacentHTML('beforeend', `<button class="mok" title="Controlla questa riga (Invio)" aria-label="Controlla la riga ${i + 1}">${icon('check')}</button>`); $('.mok', box).onclick = () => { r.latex = r.mf ? r.mf.value : r.latex; commitRow(i); }; }
     else { box.innerHTML = katexHTML(r.latex); if (rowLabel(r)) box.insertAdjacentHTML('beforeend', `<span class="mtag">${esc(rowLabel(r))}</span>`); }
     $('.mnum', el).onclick = () => { selectRow(i); };
     const del = $('.mdel', el); if (del) del.onclick = () => deleteRow(i);
@@ -6742,8 +6810,9 @@ function drawSheet() {
 }
 function selectRow(i) { ML.sel = i; ML.rows.forEach((r, k) => r.el && r.el.classList.toggle('sel', k === i)); }
 function commitRow(i) {
-  validate();
   const r = ML.rows[i];
+  if (r && r.kind === 'user') r.checked = r.latex;
+  validate();
   const last = ML.rows[ML.rows.length - 1];
   if (r === last && r.latex.trim()) {
     ML.rows.push({ kind: 'user', latex: '' });
@@ -6761,7 +6830,7 @@ function deleteRow(i) {
 function parsedRow(r) { if (!r.latex || !r.latex.trim()) return { kind: 'empty' }; return MLE.parseLine(toAscii(r.latex)); }
 function setRow(r, cls, msg, icn) {
   if (!r.el) return;
-  r.el.classList.remove('ok', 'ko', 'warn', 'done');
+  r.el.classList.remove('ok', 'ko', 'warn', 'done', 'pending');
   if (cls) r.el.classList.add(cls);
   $('.mmsg', r.el).textContent = msg || '';
   $('.mstat', r.el).innerHTML = icn ? icon(icn) : '';
@@ -6771,6 +6840,7 @@ function validate() {
   ML.rows.forEach((r, i) => {
     const p = parsedRow(r); r.p = p;
     if (p.kind === 'empty') { setRow(r, '', ''); return; }
+    if (r.kind === 'user' && r.checked !== r.latex) { setRow(r, r.checked !== undefined ? 'pending' : '', ''); return; } // non ancora confermata
     if (r.kind === 'given') { prev = ML.ex && ML.ex.derive ? MLE.derivTarget(ML.ex) : p; prevIdx = i; setRow(r, '', ''); return; }
     if (!prev) { // prima riga dell'esercizio libero
       if (p.kind === 'error') setRow(r, 'ko', p.msg, 'x'); else setRow(r, '', p.kind === 'eq' ? 'Equazione di partenza.' : p.kind === 'ineq' ? 'Disequazione: posso scriverla ma non controllarla.' : 'Espressione di partenza.');

@@ -765,7 +765,8 @@ details.acc summary .wk { background: var(--u); color: var(--uf); }
 .ide-ed .editor-wrap pre, .ide-ed .editor-wrap textarea { padding-left: 10px; }
 .editor-wrap.gut { display: flex; min-height: 100%; }
 .editor-wrap.gut .code-area { position: relative; flex: 1; min-width: 0; }
-.gutter { flex: none; padding: 14px 8px 18px 12px; min-width: 3.4ch; text-align: right; white-space: pre; font-family: var(--font-mono); font-size: 14.5px; line-height: 1.65; color: #5E5A74; user-select: none; border-right: 1px solid var(--code-line); }
+.editor-wrap.gut pre, .editor-wrap.gut textarea { padding-left: 10px; }
+.gutter { flex: none; padding: 14px 8px 18px 12px; min-width: 3.4ch; text-align: right; white-space: pre; font-family: var(--font-mono); font-size: 14.5px; line-height: 1.65; color: #8F8AAD; user-select: none; border-right: 1px solid var(--code-line); }
 .gutter .err { color: #FF7B7B; font-weight: 700; }
 .term-btn { font: 700 12.5px var(--font-body); color: #D9D9E3; background: transparent; border: 2px solid var(--code-line); border-radius: 9px; padding: 5px 10px; }
 .term-btn:hover:not(:disabled) { background: var(--code-line); }
@@ -6789,8 +6790,9 @@ function codeAsOrder(ex) {
 // Editor con evidenziazione
 function makeEditor(container, initial, fname = 'programma.py', opts = {}) {
   const area = `<pre aria-hidden="true"></pre><textarea spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off" aria-label="Editor di codice Python"></textarea>`;
-  container.innerHTML = `<div class="editor ${opts.gutter ? 'ide-ed' : ''}">${opts.bar === false ? '' : `<div class="editor-bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="fname">${esc(fname)}</span></div>`}
-    ${opts.gutter ? `<div class="editor-wrap gut"><div class="gutter" aria-hidden="true"></div><div class="code-area">${area}</div></div>` : `<div class="editor-wrap">${area}</div>`}</div>`;
+  const gutter = opts.gutter !== false; // numeri di riga ovunque, salvo richiesta contraria
+  container.innerHTML = `<div class="editor ${opts.ide ? 'ide-ed' : ''}">${opts.bar === false ? '' : `<div class="editor-bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="fname">${esc(fname)}</span></div>`}
+    ${gutter ? `<div class="editor-wrap gut"><div class="gutter" aria-hidden="true"></div><div class="code-area">${area}</div></div>` : `<div class="editor-wrap">${area}</div>`}</div>`;
   const ta = $('textarea', container), pre = $('pre', container), gut = $('.gutter', container);
   let errLine = 0;
   const paintGutter = () => { if (!gut) return; const n = ta.value.split('\n').length; let h = ''; for (let i = 1; i <= n; i++) h += `<span${i === errLine ? ' class="err"' : ''}>${i}</span>\n`; gut.innerHTML = h; };
@@ -6875,6 +6877,7 @@ function rCode(ex, root) {
     outEl.innerHTML = `<p class="engine-status"><span class="spinner"></span> Esecuzione…</p>`;
     const r = await Py.run(ed.value, { inputs: sample ? sample.in : [], argv: sample ? sample.argv : [] });
     if (r.unavailable) return;
+    ed.markLine(r.error ? r.line || 0 : 0);
     outEl.innerHTML = (sample && sample.in && sample.in.length ? `<p class="note">${icon('user')} Input di prova: ${sample.in.map(v => `<code>${esc(v)}</code>`).join(' ')}</p>` : '') + consoleHTML(r);
   };
   L.solShown = false;
@@ -6896,6 +6899,7 @@ function rCode(ex, root) {
         results.push({ r, ok: r.ok });
       }
       const allOk = results.every(x => x.ok);
+      const bad = results.find(x => x.r && x.r.error && x.r.line); ed.markLine(bad ? bad.r.line : 0);
       outEl.innerHTML = `<div class="tests">${results.map((x, i) => testHTML(x, i, ex)).join('')}</div>`;
       if (!allOk) { L.attempts++; if (L.attempts >= 2 && !L.solShown) solBtn.hidden = false; }
       return { ok: allOk, code: true };
@@ -7342,7 +7346,7 @@ function renderPyLab() {
         <div class="term-body" id="term-body"><span id="term-out"></span><span id="term-line"><span id="term-ps"></span><input id="term-in" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Riga del terminale"></span></div>
       </section>
     </div>`;
-  labEd = makeEditor($('#lab-ed'), saved != null ? saved : LAB_EXAMPLES[0].code, 'main.py', { gutter: true, bar: false, minHeight: innerWidth < 700 ? 240 : 360, onChange: () => { clearTimeout(labEd && labEd._t); if (labEd) labEd._t = setTimeout(labSave, 500); } });
+  labEd = makeEditor($('#lab-ed'), saved != null ? saved : LAB_EXAMPLES[0].code, 'main.py', { gutter: true, ide: true, bar: false, minHeight: innerWidth < 700 ? 240 : 360, onChange: () => { clearTimeout(labEd && labEd._t); if (labEd) labEd._t = setTimeout(labSave, 500); } });
   $('#lab-man').onclick = () => manualSheet(manRefs(labEd.value), 'Nel tuo programma');
   T.hist = [`<span class="t-mute">Benvenuto nel terminale di Pitone. Premi Esegui oppure scrivi python main.py. Scrivi help per l'elenco dei comandi.</span>\n`];
   const ex = $('#lab-ex');

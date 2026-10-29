@@ -78,6 +78,8 @@
 }
 
 * { box-sizing: border-box; }
+/* niente legature: >= != == <= devono restare i caratteri che si scrivono davvero in Python, non ≥ ≠ ≤ */
+*, *::before, *::after { font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }
 html, body { height: 100%; }
 body {
   background:

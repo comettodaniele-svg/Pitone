@@ -493,11 +493,6 @@ p code, li code, .md code, .l-q code, .hint code { background: var(--surface-2);
 .py-step { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--line); }
 .py-step h4 { margin: 0 0 6px; font-family: var(--font-display); font-size: 16px; }
 .console.err-out { color: #FFB0B5; }
-.vid-read { display: flex; align-items: center; gap: 8px; width: calc(100% - 28px); margin: 0 14px 12px; padding: 9px 12px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface-2); color: var(--ink); font: inherit; font-size: 14px; font-weight: 800; text-align: left; cursor: pointer; }
-.vid-read .ic { width: 18px; height: 18px; color: var(--u, var(--brand)); flex: none; }
-.vid-text { margin: 0 14px 14px; padding: 12px 14px; border-radius: 12px; background: var(--surface-2); max-height: 60vh; overflow-y: auto; font-size: 15.5px; line-height: 1.6; }
-.vid-text p { margin: 0 0 10px; }
-.vid-text-st, .vid-text-note { color: var(--muted); font-size: 13px; }
 .vid figcaption { padding: 10px 14px 12px; font-size: 13.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; }
 .vid figcaption b { color: var(--ink); font-size: 14.5px; flex-basis: 100%; }
 .vid figcaption a { color: var(--u, var(--brand)); font-weight: 700; text-decoration: none; }
@@ -12027,12 +12022,12 @@ function videoCard(v, compact = false) {
     const id = vidId(v); VID[id] = v;
     return `<figure class="vid" data-vid="${id}"><video controls playsinline preload="none" poster="https://i.ytimg.com/vi/${v.yt}/hqdefault.jpg" src="${v.mp4}${frag}"></video>
       ${v.srt ? `<div class="subs" role="group" aria-label="Sottotitoli"><span class="subs-l">${icon('cc')} Sottotitoli</span>${SUB_OPTS.map(([k, n]) => `<button data-sub="${k}" aria-pressed="${subPref() === k}">${n}</button>`).join('')}<span class="subs-st" aria-live="polite"></span></div>` : ''}
-      <figcaption><b>${esc(v.title)}</b><span>${kind} · ${range}</span>${compact ? '' : links}</figcaption>${readBtn(v)}</figure>`;
+      <figcaption><b>${esc(v.title)}</b><span>${kind} · ${range}</span>${compact ? '' : links}</figcaption></figure>`;
   }
   const rid = vidId(v); VID[rid] = v;
   return `<figure class="vid" data-vid="${rid}"><a class="vid-cover" href="${ytUrl(v)}" target="_blank" rel="noopener" aria-label="Guarda ${esc(v.title)} su YouTube">
       <span class="play">${icon('play')}</span><span class="vk">${kind} · si apre su YouTube</span><span class="vt">${esc(v.title)}</span></a>
-    ${compact ? '' : `<figcaption><span>${range}</span>${links}<span class="yt-hint">Qui il video si apre su YouTube: le pagine web di Claude non possono riprodurre video di altri siti. Nell'app Android parte direttamente qui, con i sottotitoli in italiano. Su YouTube attivi l'italiano da ⚙ Impostazioni › Sottotitoli › Traduzione automatica › Italiano.</span></figcaption>`}${readBtn(v)}</figure>`;
+    ${compact ? '' : `<figcaption><span>${range}</span>${links}<span class="yt-hint">Qui il video si apre su YouTube: le pagine web di Claude non possono riprodurre video di altri siti. Nell'app Android parte direttamente qui, con i sottotitoli in italiano. Su YouTube attivi l'italiano da ⚙ Impostazioni › Sottotitoli › Traduzione automatica › Italiano.</span></figcaption>`}</figure>`;
 }
 function videosHTML(vs, compact = false) {
   if (!vs || !vs.length) return '';
@@ -12041,34 +12036,8 @@ function videosHTML(vs, compact = false) {
 // ── Sottotitoli: inglese ufficiale di CS50 o italiano tradotto automaticamente ──
 const VID = {};
 // "Leggi il video": il testo dei sottotitoli di CS50, tradotto, per chi non può guardarlo o ascoltarlo
-const readBtn = v => v.srt ? `<button class="vid-read" data-read aria-expanded="false">${icon('book')} <span>${esc(t('Non puoi guardarlo? Leggi il testo del video'))}</span></button><div class="vid-text" hidden></div>` : '';
-async function showTranscript(fig) {
-  const v = VID[fig.dataset.vid], box = $('.vid-text', fig), btn = $('[data-read]', fig);
-  if (!v || !box) return;
-  const open = box.hidden;
-  box.hidden = !open; btn.setAttribute('aria-expanded', open);
-  if (!open || box.dataset.ok) return;
-  const lang = LANG === 'en' ? 'en' : LANG;
-  box.innerHTML = `<p class="vid-text-st">${esc(t('Preparo il testo…'))}</p>`;
-  try {
-    // si traducono frasi intere (non i pezzi dei sottotitoli), così la traduzione è più leggibile
-    const key = `pitone.read.${lang}.${vidId(v)}`;
-    let sent = null;
-    try { const c = localStorage.getItem(key); if (c) sent = JSON.parse(c); } catch (e) { /* ignora */ }
-    if (!sent) {
-      const vtt = await loadSubs(v, 'en');
-      const text = vtt.split(/\n\s*\n/).slice(1).map(b => b.split('\n').filter(l => !l.includes('-->')).join(' ')).join(' ').replace(/\s+/g, ' ').trim();
-      sent = (text.match(/[^.!?]+[.!?]+["')\]]*\s*|[^.!?]+$/g) || [text]).map(x => x.trim()).filter(Boolean);
-      if (lang !== 'en') sent = (await translateCues(sent.map(x => ({ t: x })), p => { const st = $('.vid-text-st', box); if (st) st.textContent = t('Traduco il testo… {0}%', Math.round(p * 100)); }, lang)).map(c => c.t);
-      try { localStorage.setItem(key, JSON.stringify(sent)); } catch (e) { /* spazio esaurito */ }
-    }
-    const paras = []; for (let k = 0; k < sent.length; k += 4) paras.push(sent.slice(k, k + 4).join(' ').trim());
-    box.innerHTML = paras.map(x => `<p>${esc(x)}</p>`).join('') + `<p class="vid-text-note">${esc(lang === 'en' ? t('Testo dei sottotitoli originali di CS50.') : t('Testo dei sottotitoli di CS50, tradotto automaticamente dall\'inglese: può contenere imprecisioni.'))}</p>`;
-    box.dataset.ok = '1';
-  } catch (e) {
-    box.innerHTML = `<p class="vid-text-st">${esc(navigator.onLine === false ? t('Per leggere il testo del video serve una connessione a internet.') : t('Non riesco a caricare il testo del video in questo momento. Riprova più tardi.'))}</p>`;
-  }
-}
+// i testi dei video letti in passato non servono più: si libera lo spazio
+try { Object.keys(localStorage).filter(k => k.startsWith('pitone.read.')).forEach(k => localStorage.removeItem(k)); } catch (e) { /* ignora */ }
 // sottotitoli: spenti, inglesi originali, oppure tradotti nella lingua dell'app
 const SUB_OPTS = [['off', 'No'], ['en', 'Inglese']].concat(LANG === 'en' ? [] : [[LANG, LANGS[LANG]]]);
 const subPref = () => { const v = S.subs || LANG; return v === 'off' || v === 'en' ? v : (LANG === 'en' ? 'en' : LANG); };
@@ -12147,7 +12116,6 @@ async function setSubs(fig, lang) {
   }
 }
 function wireVideos(root) {
-  $$('.vid[data-vid] [data-read]', root).forEach(b => b.onclick = () => showTranscript(b.closest('.vid')));
   $$('.vid[data-vid]', root).forEach(fig => {
     $$('[data-sub]', fig).forEach(b => b.onclick = () => { S.subs = b.dataset.sub; save(); setSubs(fig, subPref()); });
     const vd = $('video', fig);
